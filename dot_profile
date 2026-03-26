@@ -1,5 +1,3 @@
-# ~/.profile
-
 # .bashrc für Bash-Login-Shells laden
 if [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
