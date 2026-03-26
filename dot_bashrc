@@ -1,5 +1,3 @@
-# ~/.bashrc
-
 # Nur interaktive Shells
 [[ $- != *i* ]] && return
 
@@ -51,7 +49,7 @@ copy() {
 }
 
 # --------------------------------------------------
-# Aliases (mit Farben)
+# Aliases
 # --------------------------------------------------
 
 if command -v ls >/dev/null 2>&1; then
@@ -65,7 +63,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 
 # --------------------------------------------------
-# LS_COLORS (nur wenn verfügbar)
+# LS_COLORS
 # --------------------------------------------------
 
 if command -v dircolors >/dev/null 2>&1; then
