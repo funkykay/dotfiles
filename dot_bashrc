@@ -54,3 +54,9 @@ elif [[ -f /etc/bash_completion ]]; then
   . /etc/bash_completion
 fi
 
+# kubectl Kurzalias mit Autocompletion
+alias k=kubectl
+if command -v kubectl >/dev/null 2>&1; then
+  source <(kubectl completion bash)
+  complete -o default -F __start_kubectl k
+fi
