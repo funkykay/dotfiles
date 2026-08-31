@@ -1,3 +1,9 @@
+# Repository metadata and documentation
+.gitignore
 README.md
 AGENTS.md
 summarize.json
+
+# Agent instructions belong to the source repository, not to Neovim.
+.config/nvim/AGENTS.md
+.config/nvim-go/AGENTS.md

@@ -1,5 +1,10 @@
-# Nur interaktive Shells
+# Interactive Bash configuration.
 [[ $- != *i* ]] && return
+
+# Keep the environment available even for interactive non-login shells.
+if [[ -r "$HOME/.config/shell/env.sh" ]]; then
+  . "$HOME/.config/shell/env.sh"
+fi
 
 # History
 HISTCONTROL=ignoreboth
@@ -7,56 +12,58 @@ HISTSIZE=1000
 HISTFILESIZE=2000
 shopt -s histappend checkwinsize
 
-# Farbiger Prompt
-case "$TERM" in
-  *-256color|xterm-color) use_color=true ;;
-  *) use_color=false ;;
+# Prompt
+if [[ -z "${debian_chroot:-}" && -r /etc/debian_chroot ]]; then
+  debian_chroot=$(< /etc/debian_chroot)
+fi
+
+case "${TERM:-}" in
+  *-256color|xterm-color) _bash_color_prompt=true ;;
+  *) _bash_color_prompt=false ;;
 esac
 
-if $use_color; then
-  PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+if $_bash_color_prompt; then
+  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 else
-  PS1='\u@\h:\w\$ '
+  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
+unset _bash_color_prompt
 
-# OSC52: stdin in lokale Zwischenablage kopieren
-copy() {
-  command -v base64 >/dev/null 2>&1 || {
-    echo "copy: base64 nicht installiert" >&2
-    return 1
-  }
-
-  local data
-  data="$(base64 | tr -d '\n')"
-  printf '\033]52;c;%s\a' "$data"
-}
-
-# Aliases
-if command -v ls >/dev/null 2>&1; then
-  alias ls='ls --color=auto'
-  alias ll='ls -lah'
-  alias la='ls -A'
-  alias l='ls -CF'
-fi
-
-alias ..='cd ..'
-alias ...='cd ../..'
+case "${TERM:-}" in
+  xterm*|rxvt*) PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1" ;;
+esac
 
 # LS_COLORS
 if command -v dircolors >/dev/null 2>&1; then
-  eval "$(dircolors -b 2>/dev/null)"
+  if [[ -r "$HOME/.dircolors" ]]; then
+    eval "$(dircolors -b "$HOME/.dircolors" 2>/dev/null)"
+  else
+    eval "$(dircolors -b 2>/dev/null)"
+  fi
 fi
 
-# Bash Completion
-if [[ -f /usr/share/bash-completion/bash_completion ]]; then
-  . /usr/share/bash-completion/bash_completion
-elif [[ -f /etc/bash_completion ]]; then
-  . /etc/bash_completion
+# Bash completion
+if ! shopt -oq posix; then
+  if [[ -r /usr/share/bash-completion/bash_completion ]]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [[ -r /etc/bash_completion ]]; then
+    . /etc/bash_completion
+  fi
 fi
 
-# kubectl Kurzalias mit Autocompletion
-alias k=kubectl
-if command -v kubectl >/dev/null 2>&1; then
-  source <(kubectl completion bash)
-  complete -o default -F __start_kubectl k
+# Bash-specific modules
+for _bash_module in aliases functions integrations; do
+  if [[ -r "$HOME/.config/bash/${_bash_module}.sh" ]]; then
+    . "$HOME/.config/bash/${_bash_module}.sh"
+  fi
+done
+unset _bash_module
+
+# NVM manages shell functions and therefore belongs in interactive Bash.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  . "$NVM_DIR/nvm.sh"
+fi
+if [[ -s "$NVM_DIR/bash_completion" ]]; then
+  . "$NVM_DIR/bash_completion"
 fi

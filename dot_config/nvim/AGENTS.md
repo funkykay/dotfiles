@@ -1,31 +1,34 @@
-# Neovim Configuration
+# Minimal Neovim Configuration
 
-This repository contains my main Neovim configuration.
+This directory is the general, deliberately minimal Neovim product in the
+dotfiles repository. It is separate from the Go IDE in `../nvim-go`.
 
 ## Goals
 
-- Keep the configuration simple and maintainable.
+- Keep startup fast, the configuration plugin-free, and `init.lua` easy to
+  understand.
 - Prefer Lua over Vimscript.
-- Do not add plugins unless they provide a clear benefit.
-- Avoid duplicating functionality already provided by existing plugins.
+- Keep the single-file layout while it remains clear.
 
 ## Working rules
 
 - Inspect the existing configuration before changing anything.
 - Make small and focused changes.
-- Do not remove key mappings or plugins without explaining why.
-- Before adding a plugin, check whether an existing plugin already solves the problem.
+- Do not add plugins or copy Go-IDE behaviour here without explicit scope.
+- Do not modify `../nvim-go` merely to mirror a change in this product.
 
 ## Validation
 
 After changes:
 
 - Check Lua syntax where possible.
-- Start Neovim headlessly if appropriate.
+- Do not start Neovim in a way that could install or update anything.
 - Check `git diff`.
 
 ## Safety
 
+- Treat this chezmoi source as the source of truth; never edit the live
+  `~/.config/nvim` files.
 - Do not modify files outside this repository.
 - Do not commit or push automatically.
 - Do not install system packages without asking.

@@ -1,6 +1,6 @@
 [user]
-    name = Kay Donner
-    email = git@kaydonner.de
+    name = Kay
+    email = coding@kaydonner.de
 
 [core]
     editor = nvim
@@ -16,4 +16,3 @@
     st = status
     co = checkout
     lg = log --oneline --graph --decorate --all
-

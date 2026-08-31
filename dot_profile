@@ -1,11 +1,18 @@
-# .bashrc für Bash-Login-Shells laden
-if [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
+# General environment for login sessions.
+if [ -r "$HOME/.config/shell/env.sh" ]; then
+  . "$HOME/.config/shell/env.sh"
+fi
+
+# Bash login shells also load the interactive Bash configuration.
+if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
 fi
 
-# PATH
-[[ -d "$HOME/bin" ]] && PATH="$HOME/bin:$PATH"
-[[ -d "$HOME/.local/bin" ]] && PATH="$HOME/.local/bin:$PATH"
-
-export PATH
-
+# Start X automatically on the first virtual console when it is available.
+if [ -z "${DISPLAY:-}" ] && command -v tty >/dev/null 2>&1; then
+  _profile_tty=$(tty 2>/dev/null) || _profile_tty=
+  if [ "$_profile_tty" = "/dev/tty1" ] && command -v startx >/dev/null 2>&1; then
+    startx
+  fi
+  unset _profile_tty
+fi
