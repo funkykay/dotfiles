@@ -25,7 +25,8 @@ Die Shell-Konfiguration ist nach Verantwortung getrennt:
   Environment, lädt für Bash-Login-Shells `.bashrc` und startet optional X auf
   tty1.
 - `dot_bashrc` konfiguriert ausschließlich interaktive Bash-Shells: History,
-  Prompt, Optionen, Bash Completion, Modul-Loading und NVM.
+  Prompt, Optionen, Bash Completion, Modul-Loading, lokale Rechnerkonfiguration
+  und NVM.
 - `dot_config/shell/env.sh` verwaltet allgemeine Environment-Variablen und
   baut `PATH` idempotent auf.
 - `dot_config/bash/aliases.sh` enthält interaktive Aliases.
@@ -34,6 +35,10 @@ Die Shell-Konfiguration ist nach Verantwortung getrennt:
   die OSC52-Funktion `copy`.
 - `dot_config/bash/integrations.sh` enthält robuste, optionale Tool-Integration
   wie kubectl-Completion.
+- `~/.config/bash/local.sh` ist bewusst nicht von chezmoi verwaltet und kann
+  lokale Aliases, Funktionen, Environment-Anpassungen oder andere
+  rechnerabhängige interaktive Bash-Konfiguration enthalten. Die Datei wird
+  nach den verwalteten Bash-Modulen geladen.
 
 `bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip` und
 `json` sind solche Utilities. `gp` führt dagegen `git add .`, `git commit` und
@@ -43,45 +48,83 @@ Convenience-Kommandos einzustufen und sollten nicht automatisiert aufgerufen
 werden. Das Utility `public-ip` zeigt die öffentliche IP-Adresse an und wird als
 `~/bin/public-ip` deployed, sodass das übliche iproute2-Kommando frei bleibt.
 
-## Neovim-Produkte
+## Neovim-Architektur
 
-Es existieren zwei absichtlich getrennte Konfigurationen:
+Die Neovim-Konfiguration besteht aus einer gemeinsamen Basis und darauf
+aufbauenden Produkten:
 
-- `dot_config/nvim` ist die schnelle, pluginfreie Standardkonfiguration. Ihre
-  einzelne `init.lua` bleibt bewusst einfach.
-- `dot_config/nvim-go` ist die vollständige Go-IDE und wird mit
-  `NVIM_APPNAME=nvim-go nvim` gestartet. Ihr Bootstrap liegt in `init.lua`,
-  Laufzeitkonfiguration in `lua/config/` und Plugin-Spezifikationen in
-  `lua/plugins/`.
+- `dot_config/nvim-common` enthält die vollständige allgemeine
+  Neovim-Konfiguration.
+- `dot_config/nvim` lädt diese gemeinsame Basis unverändert.
+- `dot_config/nvim-go` lädt dieselbe Basis und ergänzt ausschließlich
+  Go-spezifische Konfiguration.
 
-Die Produkte werden nicht zusammengeführt. Go-spezifische Plugins, LSP-,
-Completion- und DAP-Konfiguration bleiben in `nvim-go`.
+`nvim-go` wird mit `NVIM_APPNAME=nvim-go nvim` gestartet. Beide Produkte nehmen
+`~/.config/nvim-common` in ihren Runtimepath auf.
 
-### Bewusst offene nvim-go-Themen
+### nvim-common
 
-Der Architekturumbau ändert diese Punkte absichtlich noch nicht:
+Die gemeinsame Schicht enthält:
 
-- Der von `go.nvim` angelegte `FileType`-Autocmd besitzt derzeit einen leeren
-  Callback und hat damit keine sichtbare Wirkung.
-- Formatierung hat zwei Einstiege: gopls formatiert synchron über einen
-  `BufWritePre`-Autocmd, während `go.nvim` mit `gofumpt` konfiguriert ist und
-  über `<leader>gf` (`GoFmt`) manuell formatiert. Die gewünschte alleinige
-  Zuständigkeit muss vor einer Bereinigung festgelegt werden.
-- `go.nvim` hat `dap_debug = true`, während Adapter und Launch-Konfigurationen
-  zugleich manuell über `nvim-dap`/Delve definiert werden. Diese mögliche
-  Doppelzuständigkeit sollte anhand des tatsächlich aktiven Adapters geprüft
-  werden.
-- Die LSP-Verantwortung ist bewusst manuell: `go.nvim` hat `lsp_cfg = false`
-  und `lsp_on_attach = false`; gopls und lua_ls werden in `config/lsp.lua`
-  eingerichtet. Der dortige Fallback auf `require("lspconfig").setup()` dient
-  älteren Neovim-Versionen, gehört bei einem späteren Versionsschnitt aber auf
-  den Prüfstand.
-- `vim.diagnostic.goto_prev()` und `vim.diagnostic.goto_next()` gelten in
-  neueren Neovim-Versionen als veraltet. Eine Migration auf
-  `vim.diagnostic.jump()` ist ein separater, funktionaler Kompatibilitätsschritt.
-- Die verwendeten Trouble-Kommandos sollten bei einem späteren Plugin-Upgrade
-  gegen die dann gültige Trouble-API geprüft werden. In diesem Durchgang
-  bleiben Commands und Lockfile unverändert.
+- allgemeine Editor-Optionen
+- lazy.nvim als Plugin-Manager
+- TokyoNight
+- Lualine
+- Telescope
+- Gitsigns
+- Treesitter
+- nvim-lspconfig
+- nvim-cmp und cmp-nvim-lsp
+- nvim-dap
+- Lua-LSP über lua-language-server
+- allgemeine LSP-Navigation und Code-Actions
+- allgemeine Diagnostic-Navigation und Diagnostic-Darstellung
+- allgemeine DAP-Keymaps
+- File-, Volltext- und Recent-File-Suche über Telescope
+- automatischen Telescope-File-Chooser, wenn keine Datei geöffnet ist
+- Single-File-Workflow
+- automatisches Speichern und Schließen der vorherigen Datei beim Dateiwechsel
+- Make-Command mit Target-Completion
+- Quickfix-Navigation
+- Terminal-`Esc`-Mapping
+- visuelles Hervorheben von Yanks
+
+Die gemeinsame Plugin-Spezifikation liegt unter
+`dot_config/nvim-common/lua/common/plugins.lua`. Der gemeinsame Lockfile liegt
+unter `dot_config/nvim-common/lazy-lock.json`.
+
+Plugin-Installationen werden von beiden Neovim-Produkten gemeinsam unter
+`~/.local/share/nvim-common/lazy` verwendet.
+
+Treesitter installiert in der gemeinsamen Basis den Lua-Parser und aktiviert
+Highlighting und Indentation für Dateitypen, für die ein Parser verfügbar ist.
+Weitere sprachspezifische Parser werden von den jeweiligen Produkten ergänzt.
+
+### nvim
+
+Die allgemeine Neovim-Konfiguration ist nur noch ein dünner Einstiegspunkt und
+lädt vollständig `nvim-common`.
+
+### nvim-go
+
+Das Go-Setup ergänzt die gemeinsame Basis ausschließlich um:
+
+- Go-Einrückung mit Tabs
+- gopls
+- automatische Go-Formatierung über gopls mit `gofumpt`
+- gopls Inlay Hints und Analysen
+- Treesitter-Parser für Go, Go Modules, Go Sum und Go Workspaces
+- Delve als Go-DAP-Adapter
+- Debug-Konfigurationen für Go-Dateien, Packages und Tests
+
+Bewusst nicht enthalten sind Filetree, Bufferline, Trouble, Which-Key, Noice,
+Notify, Dressing, Mason, go.nvim, LuaSnip und DAP-UI.
+
+gopls, lua-language-server und dlv werden nicht durch Neovim installiert,
+sondern müssen als normale System- oder Development-Tools im `PATH` vorhanden
+sein. `tools/check-tools.sh` prüft diese Abhängigkeiten.
+
+Der lazy.nvim-Update-Checker ist deaktiviert.
 
 ## Späterer Bootstrap-Workflow
 

@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nvim Cheat Sheet</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #16161e;
+      --surface: #1f2335;
+      --surface-alt: #24283b;
+      --border: #3b4261;
+      --text: #c0caf5;
+      --muted: #9aa5ce;
+      --accent: #7aa2f7;
+      --accent-secondary: #bb9af7;
+      --success: #9ece6a;
+      --warning: #e0af68;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1200px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 3rem 0 5rem;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      line-height: 1.1;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      color: var(--accent);
+      font-size: 1.35rem;
+    }
+
+    h3 {
+      margin-bottom: 0.75rem;
+      color: var(--accent-secondary);
+      font-size: 1rem;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .section {
+      margin-top: 2.5rem;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      background: var(--surface);
+    }
+
+    .card-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-alt);
+    }
+
+    .card-header h3 {
+      margin: 0;
+    }
+
+    .rows {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: minmax(7.5rem, auto) 1fr;
+      gap: 1rem;
+      align-items: start;
+      padding: 0.8rem 1.25rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .keys {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+      min-height: 1.8rem;
+    }
+
+    kbd,
+    code {
+      font-family:
+        "JetBrains Mono",
+        "Fira Code",
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 1.8rem;
+      padding: 0.18rem 0.42rem;
+      border: 1px solid #565f89;
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      background: #292e42;
+      color: #ffffff;
+      font-size: 0.82rem;
+      line-height: 1.2;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    code {
+      color: var(--success);
+      font-size: 0.9em;
+    }
+
+    .description {
+      color: var(--text);
+    }
+
+    .description small {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--muted);
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 0.7rem;
+      margin: 0;
+      padding: 1rem 1.25rem;
+      list-style: none;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 1.25rem;
+    }
+
+    .feature-list li::before {
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      content: "●";
+    }
+
+    .note {
+      margin: 0;
+      padding: 1rem 1.25rem;
+      border-left: 3px solid var(--warning);
+      background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+      color: var(--muted);
+    }
+
+    .command {
+      color: var(--accent-secondary);
+    }
+
+    @media (max-width: 600px) {
+      main {
+        width: min(100% - 1rem, 1200px);
+        padding-top: 1.5rem;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Neovim Cheat Sheet</h1>
+      <p class="subtitle">
+        Übersicht über die konfigurierte gemeinsame Neovim-Basis und das Go-spezifische Setup.
+      </p>
+
+      <div class="legend">
+        <span><kbd>Leader</kbd> = Leertaste</span>
+        <span><kbd>LocalLeader</kbd> = ,</span>
+        <span><code>nvim</code> = allgemeines Setup</span>
+        <span><code>nvim_go</code> = Go-Setup</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>Dateien &amp; Suche</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Telescope</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>f</kbd><kbd>f</kbd>
+              </div>
+              <div class="description">Dateien suchen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>f</kbd><kbd>g</kbd>
+              </div>
+              <div class="description">
+                Volltextsuche
+                <small>Verwendet Telescope live_grep.</small>
+              </div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>f</kbd><kbd>r</kbd>
+              </div>
+              <div class="description">Zuletzt verwendete Dateien</div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Telescope Navigation</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Esc</kbd>
+              </div>
+              <div class="description">Telescope schließen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Ctrl</kbd><kbd>j</kbd>
+              </div>
+              <div class="description">Nächsten Eintrag auswählen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Ctrl</kbd><kbd>k</kbd>
+              </div>
+              <div class="description">Vorherigen Eintrag auswählen</div>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>LSP &amp; Diagnostics</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Code Navigation</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>g</kbd><kbd>d</kbd>
+              </div>
+              <div class="description">Zur Definition springen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>g</kbd><kbd>D</kbd>
+              </div>
+              <div class="description">Zur Deklaration springen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>g</kbd><kbd>r</kbd>
+              </div>
+              <div class="description">Referenzen anzeigen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>g</kbd><kbd>i</kbd>
+              </div>
+              <div class="description">Implementierung anzeigen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>K</kbd>
+              </div>
+              <div class="description">Hover-Dokumentation anzeigen</div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Code Actions</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>r</kbd><kbd>n</kbd>
+              </div>
+              <div class="description">Symbol umbenennen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>c</kbd><kbd>a</kbd>
+              </div>
+              <div class="description">Code Action auswählen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>d</kbd><kbd>s</kbd>
+              </div>
+              <div class="description">Dokument-Symbole anzeigen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>w</kbd><kbd>s</kbd>
+              </div>
+              <div class="description">Workspace-Symbole anzeigen</div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Diagnostics</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>[</kbd><kbd>d</kbd>
+              </div>
+              <div class="description">Vorherige Diagnostic</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>]</kbd><kbd>d</kbd>
+              </div>
+              <div class="description">Nächste Diagnostic</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>e</kbd>
+              </div>
+              <div class="description">Diagnostic als Float anzeigen</div>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Completion &amp; Snippets</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Insert Mode</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Ctrl</kbd><kbd>Space</kbd>
+              </div>
+              <div class="description">Completion manuell öffnen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Enter</kbd>
+              </div>
+              <div class="description">
+                Completion bestätigen
+                <small>Der aktuell ausgewählte Eintrag wird übernommen.</small>
+              </div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Tab</kbd>
+              </div>
+              <div class="description">
+                Nächsten Completion-Eintrag auswählen
+                <small>Falls kein Menü offen ist, zum nächsten Snippet-Feld springen.</small>
+              </div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Shift</kbd><kbd>Tab</kbd>
+              </div>
+              <div class="description">
+                Vorherigen Completion-Eintrag auswählen
+                <small>Falls kein Menü offen ist, zum vorherigen Snippet-Feld springen.</small>
+              </div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Completion-Quelle</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>LSP-Completion über <code>nvim-cmp</code> und <code>cmp-nvim-lsp</code></li>
+            <li>Snippets verwenden die eingebaute <code>vim.snippet</code>-API</li>
+            <li>Completion-Menü startet ohne automatische Vorauswahl</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Debugging</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>DAP</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>F5</kbd>
+              </div>
+              <div class="description">Debugging starten / fortsetzen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>F10</kbd>
+              </div>
+              <div class="description">Step over</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>F11</kbd>
+              </div>
+              <div class="description">Step into</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>F12</kbd>
+              </div>
+              <div class="description">Step out</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>d</kbd><kbd>b</kbd>
+              </div>
+              <div class="description">Breakpoint setzen / entfernen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>d</kbd><kbd>r</kbd>
+              </div>
+              <div class="description">DAP REPL öffnen / schließen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>d</kbd><kbd>t</kbd>
+              </div>
+              <div class="description">Debug-Session beenden</div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Go / Delve</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Delve läuft als DAP-Server über <code>dlv dap</code></li>
+            <li>Aktuelle Go-Datei debuggen</li>
+            <li>Aktuelles Go-Package debuggen</li>
+            <li>Tests des aktuellen Go-Packages debuggen</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Make &amp; Quickfix</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Build Workflow</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>m</kbd><kbd>m</kbd>
+              </div>
+              <div class="description">
+                Make-Target ausführen
+                <small>
+                  Öffnet <code>:Make </code> mit Completion für Targets aus dem Makefile.
+                </small>
+              </div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>Leader</kbd><kbd>m</kbd><kbd>q</kbd>
+              </div>
+              <div class="description">Quickfix-Liste öffnen</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>[</kbd><kbd>q</kbd>
+              </div>
+              <div class="description">Vorheriger Quickfix-Eintrag</div>
+            </li>
+
+            <li class="row">
+              <div class="keys">
+                <kbd>]</kbd><kbd>q</kbd>
+              </div>
+              <div class="description">Nächster Quickfix-Eintrag</div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Command</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>
+              <span class="command">:Make</span> verwendet Neovims eingebauten
+              <code>:make</code>-Mechanismus
+            </li>
+            <li>
+              Make-Targets werden aus <code>make -qpRr</code> ermittelt und automatisch
+              vervollständigt
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Terminal</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Terminal Mode</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <kbd>Esc</kbd>
+              </div>
+              <div class="description">Vom Terminal-Mode in den Normal-Mode wechseln</div>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Single-File Workflow</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Dateiverhalten</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Beim Start ohne geöffnete Datei wird automatisch Telescope geöffnet</li>
+            <li>Es bleibt jeweils nur eine normale Datei als Buffer geöffnet</li>
+            <li>Beim Dateiwechsel wird die vorherige geänderte Datei automatisch gespeichert</li>
+            <li>Nach erfolgreichem Speichern wird der vorherige Buffer geschlossen</li>
+            <li>Schlägt das Speichern fehl, wird zur vorherigen Datei zurückgekehrt</li>
+            <li>Nach dem Schließen der letzten Datei öffnet sich erneut die Dateisuche</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Editor-Verhalten</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Darstellung</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Absolute und relative Zeilennummern</li>
+            <li>Aktuelle Zeile wird hervorgehoben</li>
+            <li>Sign Column ist dauerhaft sichtbar</li>
+            <li>Zeilenumbruch ist deaktiviert</li>
+            <li>Mindestens acht Zeilen bzw. Spalten Abstand zum Fensterrand beim Scrollen</li>
+            <li>True-Color-Unterstützung ist aktiviert</li>
+            <li>TokyoNight im Stil <code>night</code></li>
+            <li>Globale Lualine-Statusleiste</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Bearbeitung</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Standard-Einrückung: vier Leerzeichen</li>
+            <li>Smart Indent ist aktiviert</li>
+            <li>System-Clipboard über <code>unnamedplus</code></li>
+            <li>Undo-History wird dauerhaft gespeichert</li>
+            <li>Swap- und Backup-Dateien sind deaktiviert</li>
+            <li>Versteckte Buffer sind erlaubt</li>
+            <li>Mouse-Support ist deaktiviert</li>
+            <li>Yanks werden kurz visuell hervorgehoben</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Suche &amp; Fenster</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Suche ignoriert Groß-/Kleinschreibung standardmäßig</li>
+            <li>Großbuchstaben im Suchbegriff aktivieren automatisch Case-Sensitivity</li>
+            <li>Inkrementelle Suche und Suchtreffer-Hervorhebung sind aktiviert</li>
+            <li>Vertikale Splits öffnen rechts</li>
+            <li>Horizontale Splits öffnen unten</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Treesitter</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Gemeinsame Basis</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Lua-Parser wird über die gemeinsame Konfiguration bereitgestellt</li>
+            <li>Treesitter-Highlighting startet automatisch für verfügbare Parser</li>
+            <li>Treesitter-basierte Einrückung wird automatisch aktiviert</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Go</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li><code>go</code></li>
+            <li><code>gomod</code></li>
+            <li><code>gosum</code></li>
+            <li><code>gowork</code></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Go Setup</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Start</h3>
+          </div>
+
+          <ul class="rows">
+            <li class="row">
+              <div class="keys">
+                <code>nvim_go</code>
+              </div>
+              <div class="description">
+                Go-spezialisiertes Neovim starten
+                <small>Alias für <code>NVIM_APPNAME=nvim-go nvim</code>.</small>
+              </div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>gopls</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Gemeinsame LSP-Hotkeys und Completion</li>
+            <li>Inlay Hints sind aktiviert</li>
+            <li><code>gofumpt</code>-Formatierung ist aktiviert</li>
+            <li>Go-Dateien werden vor dem Speichern automatisch über gopls formatiert</li>
+            <li><code>staticcheck</code> ist aktiviert</li>
+            <li>Analyse ungenutzter Parameter</li>
+            <li>Shadowing-Analyse</li>
+            <li>Nilness-Analyse</li>
+            <li>Analyse ungenutzter Schreibzugriffe</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Go Inlay Hints</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Variablentypen bei Zuweisungen</li>
+            <li>Felder in Composite Literals</li>
+            <li>Typen von Composite Literals</li>
+            <li>Konstantenwerte</li>
+            <li>Function Type Parameters</li>
+            <li>Parameternamen</li>
+            <li>Typen von Range-Variablen</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Einrückung</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>Das Go-Setup verwendet Tabs statt Leerzeichen</li>
+            <li>Alle sonstigen allgemeinen Optionen stammen aus <code>nvim-common</code></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Plugins</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-header">
+            <h3>Gemeinsam installiert</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li>TokyoNight</li>
+            <li>Lualine</li>
+            <li>Telescope + Plenary</li>
+            <li>Gitsigns</li>
+            <li>Treesitter</li>
+            <li>nvim-lspconfig</li>
+            <li>nvim-cmp</li>
+            <li>cmp-nvim-lsp</li>
+            <li>nvim-dap</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <h3>Externe Tools</h3>
+          </div>
+
+          <ul class="feature-list">
+            <li><code>lua-language-server</code> für Lua-LSP</li>
+            <li><code>gopls</code> für Go-LSP</li>
+            <li><code>dlv</code> für Go-Debugging</li>
+            <li><code>rg</code> für Telescope-Volltextsuche</li>
+            <li><code>make</code> für den Make-/Quickfix-Workflow</li>
+          </ul>
+        </article>
+      </div>
+
+      <p class="note">
+        Externe Development-Tools werden nicht durch Neovim installiert und müssen im
+        <code>PATH</code> verfügbar sein.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

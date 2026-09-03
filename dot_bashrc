@@ -59,6 +59,11 @@ for _bash_module in aliases functions integrations; do
 done
 unset _bash_module
 
+# Machine-local Bash configuration is intentionally unmanaged by chezmoi.
+if [[ -r "$HOME/.config/bash/local.sh" ]]; then
+  . "$HOME/.config/bash/local.sh"
+fi
+
 # NVM manages shell functions and therefore belongs in interactive Bash.
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
