@@ -35,15 +35,13 @@ Die Shell-Konfiguration ist nach Verantwortung getrennt:
 - `dot_config/bash/integrations.sh` enthält robuste, optionale Tool-Integration
   wie kubectl-Completion.
 
-`bin/` ist für eigenständige Utilities vorgesehen. `extract`, `ip` und `json`
-sind solche Utilities. `gp` führt dagegen `git add .`, `git commit` und
+`bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip` und
+`json` sind solche Utilities. `gp` führt dagegen `git add .`, `git commit` und
 `git push` aus; `update` führt ein vollständiges apt-Upgrade mit `sudo` aus.
 Beide Skripte bleiben vorerst unverändert, sind aber bewusst als riskante
 Convenience-Kommandos einzustufen und sollten nicht automatisiert aufgerufen
-werden. Das Utility `ip` zeigt die öffentliche IP-Adresse an, kollidiert als
-`~/bin/ip` aber namentlich mit dem üblichen iproute2-Kommando. Der bestehende
-Name bleibt in diesem Durchgang erhalten und sollte vor dem ersten Deployment
-bewusst bestätigt werden.
+werden. Das Utility `public-ip` zeigt die öffentliche IP-Adresse an und wird als
+`~/bin/public-ip` deployed, sodass das übliche iproute2-Kommando frei bleibt.
 
 ## Neovim-Produkte
 
