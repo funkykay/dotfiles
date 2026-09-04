@@ -81,6 +81,7 @@ Die gemeinsame Schicht enthält:
 - allgemeine Diagnostic-Navigation und Diagnostic-Darstellung
 - allgemeine DAP-Keymaps
 - File-, Volltext- und Recent-File-Suche über Telescope
+- Dateioperationen im Telescope-File-Chooser zum Anlegen, Umbenennen und Löschen
 - automatischen Telescope-File-Chooser, wenn keine Datei geöffnet ist
 - Single-File-Workflow
 - automatisches Speichern und Schließen der vorherigen Datei beim Dateiwechsel
