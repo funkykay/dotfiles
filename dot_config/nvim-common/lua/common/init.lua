@@ -9,7 +9,7 @@ function M.setup(opts)
 
   require("common.options")
 
-  require("common.lazy").setup({
+  local plugins_ready = require("common.lazy").setup({
     config_path = opts.path,
   })
 
@@ -18,10 +18,16 @@ function M.setup(opts)
   require("common.keymaps")
   require("common.dap").setup()
 
-  require("common.single_file").setup({
+  local file_chooser = nil
+
+  if plugins_ready then
     file_chooser = function()
       require("telescope.builtin").find_files()
-    end,
+    end
+  end
+
+  require("common.single_file").setup({
+    file_chooser = file_chooser,
   })
 end
 
