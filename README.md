@@ -29,6 +29,8 @@ Die Shell-Konfiguration ist nach Verantwortung getrennt:
   und NVM.
 - `dot_config/shell/env.sh` verwaltet allgemeine Environment-Variablen und
   baut `PATH` idempotent auf.
+- `~/.config/shell/local.sh` kann unmanaged Environment-Variablen für einen
+  einzelnen Rechner enthalten. Sie wird nach `env.sh` in Login-Shells geladen.
 - `dot_config/bash/aliases.sh` enthält interaktive Aliases.
 - `dot_config/bash/functions.sh` enthält Funktionen, die den Zustand der
   aktuellen Shell verändern oder nutzen. Dazu gehören `gc` (clone and cd) und
@@ -40,8 +42,10 @@ Die Shell-Konfiguration ist nach Verantwortung getrennt:
   rechnerabhängige interaktive Bash-Konfiguration enthalten. Die Datei wird
   nach den verwalteten Bash-Modulen geladen.
 
-`bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip` und
-`json` sind solche Utilities. `gp` führt dagegen `git add .`, `git commit` und
+`bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip`,
+`json` und `shell-info` sind solche Utilities; `shell-info` zeigt die
+Shell-Konfigurationspfade, ausgewählte Umgebungsvariablen und `PATH` der
+aktuellen Sitzung an. `gp` führt dagegen `git add .`, `git commit` und
 `git push` aus; `update` führt ein vollständiges apt-Upgrade mit `sudo` aus.
 Beide Skripte bleiben vorerst unverändert, sind aber bewusst als riskante
 Convenience-Kommandos einzustufen und sollten nicht automatisiert aufgerufen

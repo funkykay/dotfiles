@@ -3,6 +3,11 @@ if [ -r "$HOME/.config/shell/env.sh" ]; then
   . "$HOME/.config/shell/env.sh"
 fi
 
+# Optional machine-local environment, intentionally unmanaged by chezmoi.
+if [ -r "$HOME/.config/shell/local.sh" ]; then
+  . "$HOME/.config/shell/local.sh"
+fi
+
 # Bash login shells also load the interactive Bash configuration.
 if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
