@@ -8,6 +8,11 @@ if [ -r "$HOME/.config/shell/local.sh" ]; then
   . "$HOME/.config/shell/local.sh"
 fi
 
+# Load Cargo's environment when Rust is installed.
+if [ -r "$HOME/.cargo/env" ]; then
+  . "$HOME/.cargo/env"
+fi
+
 # Bash login shells also load the interactive Bash configuration.
 if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
