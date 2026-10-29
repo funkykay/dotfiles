@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository is a chezmoi source for personal Linux dotfiles. Files in
+This repository is a chezmoi source for personal Linux and macOS dotfiles. Files in
 this repository are the source of truth; deployed files under `$HOME` are
 derived state.
 
@@ -23,14 +23,30 @@ derived state.
 
 ## Shell architecture
 
+- `dot_zshenv` loads the optional Cargo environment for all Zsh processes.
+- `dot_zprofile` owns Zsh login environment and optional pyenv PATH setup.
+- `dot_zshrc` owns interactive Zsh setup, a plain prompt without a theme,
+  optional Oh My Zsh, and module loading.
+- `dot_config/zsh/integrations.zsh` owns guarded, generic development tool setup.
+- `~/.config/zsh/local.zsh` is deliberately unmanaged and loaded last. Keep
+  Zsh-specific machine-local overrides there, never in the source repo.
+
 - `dot_profile` owns login/session setup: it loads the general environment,
   loads `.bashrc` for Bash login shells, and may start X on tty1.
 - `dot_bashrc` owns interactive Bash setup: history, prompt, shell options,
   Bash completion, module loading, optional machine-local configuration, and
   optional NVM setup.
 - `dot_config/shell/env.sh` owns general exported variables and idempotent PATH
-  construction. It must remain usable from a POSIX-style profile and must not
-  contain aliases, completion, or prompt/UI configuration.
+  construction, and loads `~/.config/shell/local.sh` before deriving tool paths. It must remain usable
+  from a POSIX-style profile and must not contain aliases, completion, or UI.
+- `~/.config/shell/local.sh` is the single unmanaged source for personal or
+  machine-specific environment variables shared by Bash and Zsh. Keep it
+  POSIX-compatible and safe to source repeatedly. Never put private project
+  paths, module domains, credentials, or machine-specific build flags in the
+  managed shell configuration. Start files load local.sh only through env.sh.
+- `dot_gitconfig` contains generic Git settings and includes the unmanaged
+  `~/.gitconfig.local` for identity and local overrides. Do not commit a personal
+  name or email address into the managed Git configuration.
 - `dot_config/bash/aliases.sh` contains aliases only.
 - `dot_config/bash/functions.sh` contains functions that need the calling
   Bash process, such as `gc` and `copy`.

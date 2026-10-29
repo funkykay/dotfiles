@@ -1,46 +1,71 @@
-# Linux dotfiles
+# Dotfiles für Linux und macOS
 
 Dieses Repository ist die chezmoi-Source für meine persönliche
-Linux-Konfiguration. Die Dateien hier sind die Source of Truth; Dateien unter
+Linux- und macOS-Konfiguration. Die Dateien hier sind die Source of Truth; Dateien unter
 `$HOME` sind daraus abgeleitete Live-Konfiguration und werden nicht direkt
 gepflegt.
 
 ## Verwaltung mit chezmoi
 
-Chezmoi ist ausschließlich der spätere Deployment- und Management-Layer. Im
-aktuellen Architekturumbau werden keine chezmoi-Befehle ausgeführt und nichts
-ins Home-Verzeichnis ausgerollt. Repository-Metadaten wie `README.md`,
-`AGENTS.md`, `.gitignore`, `summarize.json` sowie die Neovim-spezifischen
-`AGENTS.md` sind über `.chezmoiignore` vom Deployment ausgeschlossen.
+Chezmoi verwaltet die Dateien in diesem Repository und überträgt sie nach
+`$HOME`. Vor dem Anwenden Änderungen mit `chezmoi status` und `chezmoi diff`
+prüfen. Lokale Anpassungen zuerst in die Source übernehmen oder bewusst in
+unverwaltete lokale Dateien auslagern. Erst anschließend `chezmoi apply`
+ausführen; einzelne Dateien können gezielt angewendet werden.
 
-Host-spezifische Templates gibt es bewusst noch nicht. Sie sollen erst
-eingeführt werden, wenn tatsächlich unterschiedliche Rechnerkonfigurationen
-verwaltet werden müssen.
+Repository-Metadaten wie `README.md`, `AGENTS.md`, `.gitignore`,
+`summarize.json` und `tools/` sind über `.chezmoiignore` ausgeschlossen.
+Host-spezifische Templates werden nur bei konkretem Bedarf ergänzt.
 
 ## Shell-Architektur
 
-Die Shell-Konfiguration ist nach Verantwortung getrennt:
+Bash und Zsh laden dieselbe allgemeine Umgebung aus
+`~/.config/shell/env.sh`. Diese lädt zunächst die optionale lokale Datei
+`~/.config/shell/local.sh`. Das gilt für Login-Sitzungen und für interaktive
+Shells, die direkt gestartet werden.
 
-- `dot_profile` richtet Login-/Session-Verhalten ein, lädt das allgemeine
-  Environment, lädt für Bash-Login-Shells `.bashrc` und startet optional X auf
-  tty1.
-- `dot_bashrc` konfiguriert ausschließlich interaktive Bash-Shells: History,
-  Prompt, Optionen, Bash Completion, Modul-Loading, lokale Rechnerkonfiguration
-  und NVM.
-- `dot_config/shell/env.sh` verwaltet allgemeine Environment-Variablen und
-  baut `PATH` idempotent auf.
-- `~/.config/shell/local.sh` kann unmanaged Environment-Variablen für einen
-  einzelnen Rechner enthalten. Sie wird nach `env.sh` in Login-Shells geladen.
+| Datei | Inhalt | Im Repository |
+| --- | --- | --- |
+| `~/.config/shell/env.sh` | Allgemeine Umgebungsvariablen und wiederholbar aufgebaute Standardpfade | Ja |
+| `~/.config/shell/local.sh` | Persönliche Projektpfade, private Modulquellen, Build-Optionen und lokale Tool-Pfade für Bash und Zsh | Nein |
+| `~/.config/bash/local.sh` | Bash-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
+| `~/.config/zsh/local.zsh` | Zsh-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
+| `~/.gitconfig.local` | Persönlicher Git-Name, E-Mail und weitere lokale Git-Einstellungen | Nein |
+
+`local.sh` verwendet POSIX-Shell-Syntax, damit Bash und Zsh sie unverändert
+lesen können. Sie enthält keine Zsh-Arrays, Bash-Completion oder Prompt-Logik.
+Lokale PATH-Ergänzungen sollen vorhandene Einträge erkennen, da eine
+Login-Sitzung die gemeinsame Umgebung mehrfach laden kann. Persönliche Werte
+und Zugangsdaten gehören ausschließlich in lokale Dateien. Diese werden
+separat auf jedem Rechner eingerichtet und mit `chmod 600` geschützt.
+`.gitignore` schließt auch ihre üblichen chezmoi-Source-Namen aus;
+`.chezmoiignore` verhindert das Deployment dieser Dateien.
+
+Die verwalteten Startdateien und Module haben folgende Aufgaben:
+
+- `dot_profile` lädt das gemeinsame Environment, lädt für Bash-Login-Shells
+  `.bashrc` und startet optional X auf tty1.
+- `dot_bashrc` konfiguriert interaktive Bash-Shells: History, Prompt, Optionen,
+  Bash Completion, Module, lokale Bash-Konfiguration und optional NVM.
+- `dot_zshenv` lädt das optionale Cargo-Environment auch für nicht interaktive
+  Zsh-Prozesse.
+- `dot_zprofile` lädt das gemeinsame Login-Environment und initialisiert
+  optional den pyenv-Pfad.
+- `dot_zshrc` lädt das gemeinsame Environment, optional Oh My Zsh mit den
+  tatsächlich installierten Plugins, einen einfachen Prompt ohne Theme,
+  die Zsh-Integrationen und zuletzt die lokale Zsh-Konfiguration.
+- `dot_config/zsh/integrations.zsh` initialisiert optionale Entwicklungswerkzeuge
+  wie goenv, pyenv, NVM und SDKMAN. Rechnerabhängige Optionen werden nicht hier
+  festgeschrieben.
 - `dot_config/bash/aliases.sh` enthält interaktive Aliases.
 - `dot_config/bash/functions.sh` enthält Funktionen, die den Zustand der
-  aktuellen Shell verändern oder nutzen. Dazu gehören `gc` (clone and cd) und
-  die OSC52-Funktion `copy`.
-- `dot_config/bash/integrations.sh` enthält robuste, optionale Tool-Integration
+  aktuellen Shell verändern oder nutzen, etwa `gc` und `copy`.
+- `dot_config/bash/integrations.sh` enthält optionale Tool-Integrationen
   wie kubectl-Completion.
-- `~/.config/bash/local.sh` ist bewusst nicht von chezmoi verwaltet und kann
-  lokale Aliases, Funktionen, Environment-Anpassungen oder andere
-  rechnerabhängige interaktive Bash-Konfiguration enthalten. Die Datei wird
-  nach den verwalteten Bash-Modulen geladen.
+
+Die verwaltete Git-Konfiguration lädt `~/.gitconfig.local` zuletzt. Fehlt die
+Datei auf einem neuen Rechner, muss die persönliche Identität dort zunächst
+separat eingerichtet werden.
 
 `bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip`,
 `json` und `shell-info` sind solche Utilities; `shell-info` zeigt die
@@ -131,7 +156,7 @@ sein. `tools/check-tools.sh` prüft diese Abhängigkeiten.
 
 Der lazy.nvim-Update-Checker ist deaktiviert.
 
-## Späterer Bootstrap-Workflow
+## Bootstrap auf weiteren Rechnern
 
 Nachdem chezmoi separat und bewusst installiert wurde, ist der vorgesehene
 Workflow:
@@ -142,6 +167,6 @@ Workflow:
    kontrollieren.
 4. Erst nach dieser Prüfung ausdrücklich `chezmoi apply` ausführen.
 
-Installation, Initialisierung und Apply sind Dokumentation für einen späteren,
-separat autorisierten Schritt; dieses Repository führt sie nicht automatisch
-aus.
+Installation, Initialisierung und Apply werden nicht automatisch durch dieses
+Repository ausgeführt. Lokale Zugangsdaten werden separat eingerichtet und
+gehören niemals in die chezmoi-Source.

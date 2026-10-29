@@ -1,5 +1,13 @@
 # General environment shared by login and interactive shells.
 
+# One private environment shared by login and interactive Bash/Zsh shells.
+# Keep this file POSIX-compatible and outside the chezmoi source repository.
+if [ -r "$HOME/.config/shell/local.sh" ]; then
+  . "$HOME/.config/shell/local.sh"
+fi
+
+# Load local variables before deriving tool paths and applying defaults.
+
 _dotfiles_path_prepend() {
   [ -n "$1" ] || return 0
   case ":${PATH:-}:" in
@@ -17,9 +25,6 @@ _dotfiles_path_append() {
 }
 
 if [ -n "${HOME:-}" ]; then
-  [ -d "$HOME/code/repos/bash-toolbox/bin" ] && \
-    _dotfiles_path_append "$HOME/code/repos/bash-toolbox/bin"
-
   [ -d "$HOME/bin" ] && _dotfiles_path_prepend "$HOME/bin"
 
   ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
@@ -36,9 +41,6 @@ if [ -n "${HOME:-}" ]; then
   fi
 
   [ -d "$HOME/.local/bin" ] && _dotfiles_path_prepend "$HOME/.local/bin"
-
-  DONNI_AI_DIR="$HOME/.donni/ai/"
-  export DONNI_AI_DIR
 fi
 
 export PATH

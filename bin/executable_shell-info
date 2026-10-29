@@ -2,10 +2,12 @@
 
 set -u
 
-shell_name=${SHELL##*/}
+shell_name=${SHELL:-}
+shell_name=${shell_name##*/}
 if [[ "$shell_name" == zsh ]]; then
   current_shell="zsh (from SHELL)"
-  shell_config=("$HOME/.zshenv" "$HOME/.zprofile" "$HOME/.zshrc")
+  shell_config=("$HOME/.zshenv" "$HOME/.zprofile" "$HOME/.zshrc" \
+    "$HOME/.config/zsh/integrations.zsh" "$HOME/.config/zsh/local.zsh")
 elif [[ "$shell_name" == bash ]]; then
   current_shell="bash (from SHELL)"
   shell_config=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.config/bash/aliases.sh" \
@@ -32,8 +34,8 @@ done
 
 printf '\nSelected environment:\n'
 for name in HOME SHELL PATH XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME \
-  ASDF_DATA_DIR NVM_DIR GOPATH DONNI_AI_DIR MCP_MEMORY_STORAGE_BACKEND MCP_MEMORY_SQLITE_PATH; do
-  if [[ -v "$name" ]]; then
+  ASDF_DATA_DIR NVM_DIR GOPATH; do
+  if [[ ${!name+x} ]]; then
     printf '  %s=%s\n' "$name" "${!name}"
   else
     printf '  %s=<unset>\n' "$name"

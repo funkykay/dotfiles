@@ -1,7 +1,3 @@
-[user]
-    name = Kay
-    email = coding@kaydonner.de
-
 [core]
     editor = nvim
     autocrlf = input
@@ -16,3 +12,7 @@
     st = status
     co = checkout
     lg = log --oneline --graph --decorate --all
+
+# Personal identity and machine-local overrides.
+[include]
+    path = ~/.gitconfig.local

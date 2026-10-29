@@ -1,0 +1,2 @@
+# Cargo environment is also needed by non-interactive Zsh processes.
+[[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
