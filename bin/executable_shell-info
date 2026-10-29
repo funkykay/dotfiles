@@ -10,8 +10,7 @@ if [[ "$shell_name" == zsh ]]; then
     "$HOME/.config/zsh/integrations.zsh" "$HOME/.config/zsh/local.zsh")
 elif [[ "$shell_name" == bash ]]; then
   current_shell="bash (from SHELL)"
-  shell_config=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.config/bash/aliases.sh" \
-    "$HOME/.config/bash/functions.sh" "$HOME/.config/bash/integrations.sh" \
+  shell_config=("$HOME/.bash_profile" "$HOME/.profile" "$HOME/.bashrc" "$HOME/.config/bash/integrations.sh" \
     "$HOME/.config/bash/local.sh")
 else
   current_shell="${SHELL:-unknown} (shell type not identified)"
@@ -23,7 +22,9 @@ printf 'Login shell: %s\n' "${SHELL:-unknown}"
 printf 'Working directory: %s\n' "$PWD"
 
 printf '\nConfiguration files:\n'
-for config in "$HOME/.config/shell/env.sh" "$HOME/.config/shell/local.sh" "${shell_config[@]}"; do
+for config in "$HOME/.config/shell/env.sh" "$HOME/.config/shell/local.sh" \
+  "$HOME/.config/shell/login.sh" "$HOME/.config/shell/interactive.sh" \
+  "$HOME/.config/shell/aliases.sh" "$HOME/.config/shell/functions.sh" "${shell_config[@]}"; do
   [[ -n "$config" ]] || continue
   if [[ -r "$config" ]]; then
     printf '  readable  %s\n' "$config"

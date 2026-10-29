@@ -27,7 +27,7 @@ Shells, die direkt gestartet werden.
 | Datei | Inhalt | Im Repository |
 | --- | --- | --- |
 | `~/.config/shell/env.sh` | Allgemeine Umgebungsvariablen und wiederholbar aufgebaute Standardpfade | Ja |
-| `~/.config/shell/local.sh` | Persönliche Projektpfade, private Modulquellen, Build-Optionen und lokale Tool-Pfade für Bash und Zsh | Nein |
+| `~/.config/shell/local.sh` | Persönliche Variablen, Pfade und gemeinsame lokale Helfer für Bash und Zsh | Nein |
 | `~/.config/bash/local.sh` | Bash-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
 | `~/.config/zsh/local.zsh` | Zsh-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
 | `~/.gitconfig.local` | Persönlicher Git-Name, E-Mail und weitere lokale Git-Einstellungen | Nein |
@@ -41,27 +41,52 @@ separat auf jedem Rechner eingerichtet und mit `chmod 600` geschützt.
 `.gitignore` schließt auch ihre üblichen chezmoi-Source-Namen aus;
 `.chezmoiignore` verhindert das Deployment dieser Dateien.
 
+Beide Shells nutzen dieselben Aliase (`ll`, `la`, `l`, `..`, `...`, `k`,
+`nvim_go`) und Funktionen (`gc`, `copy`). Die Farbdarstellung von `ls` wird an
+GNU- beziehungsweise BSD/macOS-`ls` angepasst. Lokale, shellübergreifende Helfer
+können in einem interaktiven Abschnitt von `shell/local.sh` stehen:
+
+```sh
+case $- in
+  *i*)
+    # Gemeinsame lokale Aliase und Funktionen hier definieren.
+    ;;
+esac
+```
+
+Variablen und PATH-Ergänzungen stehen außerhalb dieses Abschnitts. So bleiben
+sie auch für Login-Sitzungen verfügbar, ohne dort interaktive Funktionen zu
+laden. `shell/local.sh` wird vor den verwalteten interaktiven Modulen geladen;
+für eigene lokale Helfer daher Namen verwenden, die nicht bereits verwaltet
+werden. Shell-spezifische lokale Overrides werden zuletzt geladen.
+
 Die verwalteten Startdateien und Module haben folgende Aufgaben:
 
-- `dot_profile` lädt das gemeinsame Environment, lädt für Bash-Login-Shells
-  `.bashrc` und startet optional X auf tty1.
-- `dot_bashrc` konfiguriert interaktive Bash-Shells: History, Prompt, Optionen,
-  Bash Completion, Module, lokale Bash-Konfiguration und optional NVM.
-- `dot_zshenv` lädt das optionale Cargo-Environment auch für nicht interaktive
-  Zsh-Prozesse.
-- `dot_zprofile` lädt das gemeinsame Login-Environment und initialisiert
-  optional den pyenv-Pfad.
-- `dot_zshrc` lädt das gemeinsame Environment, optional Oh My Zsh mit den
-  tatsächlich installierten Plugins, einen einfachen Prompt ohne Theme,
-  die Zsh-Integrationen und zuletzt die lokale Zsh-Konfiguration.
-- `dot_config/zsh/integrations.zsh` initialisiert optionale Entwicklungswerkzeuge
-  wie goenv, pyenv, NVM und SDKMAN. Rechnerabhängige Optionen werden nicht hier
-  festgeschrieben.
-- `dot_config/bash/aliases.sh` enthält interaktive Aliases.
-- `dot_config/bash/functions.sh` enthält Funktionen, die den Zustand der
-  aktuellen Shell verändern oder nutzen, etwa `gc` und `copy`.
-- `dot_config/bash/integrations.sh` enthält optionale Tool-Integrationen
-  wie kubectl-Completion.
+- `dot_config/shell/env.sh` lädt die gemeinsame lokale Umgebung, Standardpfade
+  und das optionale Cargo-Environment.
+- `dot_config/shell/login.sh` initialisiert die optionalen pyenv-Login-Pfade
+  für beide Shells.
+- `dot_config/shell/interactive.sh` lädt NVM und SDKMAN, richtet Terminalfarben
+  ein und lädt die gemeinsamen Aliase und Funktionen.
+- `dot_config/shell/aliases.sh` und `functions.sh` sind die gemeinsame Quelle
+  für interaktive Befehle in Bash und Zsh.
+- `dot_config/bash/integrations.sh` und `dot_config/zsh/integrations.zsh`
+  enthalten ausschließlich passende Shell-Adapter: goenv-/pyenv-Initialisierung
+  und kubectl-/Angular-Completion. Beide Shells erhalten dieselben Werkzeuge,
+  sofern sie installiert sind. Zsh kann eine vorhandene lokale
+  `~/.ng-completion.zsh` weiterverwenden.
+- `dot_bashrc` und `dot_zshrc` richten die jeweiligen History-Optionen, Prompts
+  und Completion-Systeme ein, laden die gemeinsamen Module und zuletzt die
+  shell-spezifischen lokalen Overrides. Die History-Dateien bleiben getrennt.
+- `dot_bash_profile` leitet Bash-Login-Sitzungen an `.profile` weiter.
+- `dot_profile` und `dot_zprofile` laden gemeinsame Login-Module. `.profile`
+  lädt zusätzlich `.bashrc` für Bash und kann auf tty1 X starten.
+- `dot_zshenv` stellt Cargo auch für nicht interaktive Zsh-Prozesse bereit.
+
+Oh My Zsh ist optional. Seine installierten Plugins für Eingabevorschläge und
+Syntax-Highlighting bleiben Zsh-spezifische Oberflächenfunktionen. kubectl wird
+über die eigenen Adapter eingerichtet, damit die gemeinsame Konfiguration
+auch ohne Oh My Zsh funktioniert.
 
 Die verwaltete Git-Konfiguration lädt `~/.gitconfig.local` zuletzt. Fehlt die
 Datei auf einem neuen Rechner, muss die persönliche Identität dort zunächst

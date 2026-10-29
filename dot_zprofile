@@ -1,7 +1,5 @@
-# Login environment managed by chezmoi.
+# Shared login environment and tool paths.
 [[ -r "$HOME/.config/shell/env.sh" ]] && source "$HOME/.config/shell/env.sh"
-
-export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init --path 2>/dev/null)"
+if [[ -r "$HOME/.config/shell/login.sh" ]]; then
+  source "$HOME/.config/shell/login.sh"
 fi

@@ -45,3 +45,8 @@ fi
 
 export PATH
 unset -f _dotfiles_path_prepend _dotfiles_path_append
+
+# Cargo supplies the same environment to both shells.
+if [ -r "$HOME/.cargo/env" ]; then
+  . "$HOME/.cargo/env"
+fi

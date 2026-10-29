@@ -1,4 +1,4 @@
-# Interactive Bash functions that need the calling shell's state.
+# Interactive functions shared by Bash and Zsh; they run in the calling shell.
 
 # Clone one repository and enter its default destination directory.
 gc() {

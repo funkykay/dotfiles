@@ -33,15 +33,6 @@ case "${TERM:-}" in
   xterm*|rxvt*) PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1" ;;
 esac
 
-# LS_COLORS
-if command -v dircolors >/dev/null 2>&1; then
-  if [[ -r "$HOME/.dircolors" ]]; then
-    eval "$(dircolors -b "$HOME/.dircolors" 2>/dev/null)"
-  else
-    eval "$(dircolors -b 2>/dev/null)"
-  fi
-fi
-
 # Bash completion
 if ! shopt -oq posix; then
   if [[ -r /usr/share/bash-completion/bash_completion ]]; then
@@ -51,24 +42,15 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Bash-specific modules
-for _bash_module in aliases functions integrations; do
-  if [[ -r "$HOME/.config/bash/${_bash_module}.sh" ]]; then
-    . "$HOME/.config/bash/${_bash_module}.sh"
-  fi
-done
-unset _bash_module
+# Common interactive features, followed by Bash-specific adapters.
+if [[ -r "$HOME/.config/shell/interactive.sh" ]]; then
+  . "$HOME/.config/shell/interactive.sh"
+fi
+if [[ -r "$HOME/.config/bash/integrations.sh" ]]; then
+  . "$HOME/.config/bash/integrations.sh"
+fi
 
-# Machine-local Bash configuration is intentionally unmanaged by chezmoi.
+# Only Bash-specific machine-local overrides belong here.
 if [[ -r "$HOME/.config/bash/local.sh" ]]; then
   . "$HOME/.config/bash/local.sh"
-fi
-
-# NVM manages shell functions and therefore belongs in interactive Bash.
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-  . "$NVM_DIR/nvm.sh"
-fi
-if [[ -s "$NVM_DIR/bash_completion" ]]; then
-  . "$NVM_DIR/bash_completion"
 fi

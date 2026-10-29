@@ -23,40 +23,36 @@ derived state.
 
 ## Shell architecture
 
-- `dot_zshenv` loads the optional Cargo environment for all Zsh processes.
-- `dot_zprofile` owns Zsh login environment and optional pyenv PATH setup.
-- `dot_zshrc` owns interactive Zsh setup, a plain prompt without a theme,
-  optional Oh My Zsh, and module loading.
-- `dot_config/zsh/integrations.zsh` owns guarded, generic development tool setup.
-- `~/.config/zsh/local.zsh` is deliberately unmanaged and loaded last. Keep
-  Zsh-specific machine-local overrides there, never in the source repo.
-
-- `dot_profile` owns login/session setup: it loads the general environment,
-  loads `.bashrc` for Bash login shells, and may start X on tty1.
-- `dot_bashrc` owns interactive Bash setup: history, prompt, shell options,
-  Bash completion, module loading, optional machine-local configuration, and
-  optional NVM setup.
-- `dot_config/shell/env.sh` owns general exported variables and idempotent PATH
-  construction, and loads `~/.config/shell/local.sh` before deriving tool paths. It must remain usable
-  from a POSIX-style profile and must not contain aliases, completion, or UI.
-- `~/.config/shell/local.sh` is the single unmanaged source for personal or
-  machine-specific environment variables shared by Bash and Zsh. Keep it
-  POSIX-compatible and safe to source repeatedly. Never put private project
-  paths, module domains, credentials, or machine-specific build flags in the
-  managed shell configuration. Start files load local.sh only through env.sh.
+- `dot_config/shell/env.sh` owns shared environment and idempotent PATH setup,
+  loads the optional unmanaged `~/.config/shell/local.sh` before deriving tool
+  paths, and loads Cargo when present. Keep this module POSIX-compatible.
+- `~/.config/shell/local.sh` owns all private settings common to Bash and Zsh:
+  variables, paths and personal helpers. Guard interactive helpers with
+  `case $- in *i*) ... ;; esac`. Never commit private settings or credentials.
+- `dot_config/shell/login.sh` owns shared login initialization.
+- `dot_config/shell/interactive.sh` owns common interactive tool setup (NVM,
+  SDKMAN, terminal colors) and loads the shared aliases and functions.
+- `dot_config/shell/aliases.sh` and `functions.sh` are the single source for
+  common interactive commands. Functions such as `gc` and `copy` need the
+  calling shell; do not convert them to standalone scripts. Both Bash and Zsh
+  must be able to source these modules.
+- `dot_config/bash/integrations.sh` and `dot_config/zsh/integrations.zsh` own
+  only shell-specific adapters for the same tools: goenv/pyenv initialization
+  and kubectl/Angular completion. Keep feature changes consistent across them.
+- `dot_bashrc` and `dot_zshrc` own shell-native options, history, prompt and
+  completion initialization. They load the common environment and interactive
+  modules, their own tool adapters, and shell-local overrides last.
+- `~/.config/bash/local.sh` and `~/.config/zsh/local.zsh` are deliberately
+  unmanaged and reserved for genuinely shell-specific overrides. Put common
+  local features in shell/local.sh instead. Do not duplicate implementations.
+- `dot_bash_profile` delegates Bash login startup to `.profile`.
+- `dot_profile` and `dot_zprofile` load common login modules. `.profile` also
+  loads `.bashrc` for Bash and may start X on tty1.
+- `dot_zshenv` loads optional Cargo setup for non-interactive Zsh processes.
 - `dot_gitconfig` contains generic Git settings and includes the unmanaged
-  `~/.gitconfig.local` for identity and local overrides. Do not commit a personal
-  name or email address into the managed Git configuration.
-- `dot_config/bash/aliases.sh` contains aliases only.
-- `dot_config/bash/functions.sh` contains functions that need the calling
-  Bash process, such as `gc` and `copy`.
-- `dot_config/bash/integrations.sh` contains guarded setup for optional tools.
-- `~/.config/bash/local.sh` is an optional, deliberately unmanaged file for
-  machine-specific interactive Bash configuration. It is sourced after the
-  managed Bash modules and must not be added to the chezmoi source.
-- `bin/` contains standalone commands. Do not turn parent-shell state changes
-  into external scripts. Treat commands such as `gp` and `update` as
-  safety-sensitive and do not make them more aggressive implicitly.
+  `~/.gitconfig.local` for identity and local overrides.
+- `bin/` contains standalone commands. Commands such as `gp` and `update` are
+  safety-sensitive; do not make them more aggressive implicitly.
 
 ## Neovim configurations
 

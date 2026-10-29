@@ -1,27 +1,26 @@
-# Optional development tools. Machine-specific options belong in shell/local.sh.
+# Zsh adapters for common development tools and completion.
 if command -v goenv >/dev/null 2>&1; then
-  export GOENV_ROOT="${GOENV_ROOT:-$HOME/.goenv}"
-  path=(${path:#$GOENV_ROOT/versions/*/bin})
   eval "$(goenv init - zsh)"
 fi
-
 if command -v pyenv >/dev/null 2>&1; then
-  export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
   eval "$(pyenv init - zsh 2>/dev/null)"
 fi
 
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-  source "$NVM_DIR/nvm.sh"
-elif [[ -s /opt/homebrew/opt/nvm/nvm.sh ]]; then
-  source /opt/homebrew/opt/nvm/nvm.sh
-fi
-if [[ -s "$NVM_DIR/bash_completion" ]]; then
-  source "$NVM_DIR/bash_completion"
-elif [[ -s /opt/homebrew/opt/nvm/etc/bash_completion ]]; then
-  source /opt/homebrew/opt/nvm/etc/bash_completion
+if command -v kubectl >/dev/null 2>&1; then
+  _zsh_kubectl_completion=$(kubectl completion zsh 2>/dev/null) || _zsh_kubectl_completion=
+  [[ -z $_zsh_kubectl_completion ]] || eval "$_zsh_kubectl_completion"
+  if (( $+functions[_kubectl] )); then
+    compdef _kubectl kubectl k
+  fi
+  unset _zsh_kubectl_completion
 fi
 
-if [[ -s "${SDKMAN_DIR:-$HOME/.sdkman}/bin/sdkman-init.sh" ]]; then
-  source "${SDKMAN_DIR:-$HOME/.sdkman}/bin/sdkman-init.sh"
+if command -v ng >/dev/null 2>&1; then
+  if [[ -r "$HOME/.ng-completion.zsh" ]]; then
+    source "$HOME/.ng-completion.zsh"
+  else
+    _zsh_ng_completion=$(SHELL=/bin/zsh ZSH_NAME=zsh ng completion script 2>/dev/null) || _zsh_ng_completion=
+    [[ -z $_zsh_ng_completion ]] || eval "$_zsh_ng_completion"
+    unset _zsh_ng_completion
+  fi
 fi
