@@ -1,5 +1,44 @@
 #!/usr/bin/env bash
-git add .
-git commit -m "${1:-update}"
-git push
+set -euo pipefail
+
+push=false
+if [[ ${1:-} == --push ]]; then
+  push=true
+  shift
+fi
+if (( $# != 1 )) || [[ -z $1 || $1 == -* ]]; then
+  printf 'usage: gp [--push] <commit-message>\nStage and review changes with git add and git diff --cached first.\n' >&2
+  exit 2
+fi
+
+branch=$(git symbolic-ref --quiet HEAD) || {
+  printf 'gp: an attached branch is required\n' >&2
+  exit 1
+}
+
+# Resolve the upstream before committing; an explicit refspec limits the push
+# to this branch even when push.default or remote push refspecs say otherwise.
+if "$push"; then
+  remote=$(git for-each-ref --format='%(upstream:remotename)' "$branch")
+  target=$(git for-each-ref --format='%(upstream:remoteref)' "$branch")
+  if [[ -z $remote || $remote == . || $target != refs/heads/* ]]; then
+    printf 'gp: configure a remote upstream with git push --set-upstream first\n' >&2
+    exit 1
+  fi
+fi
+
+if git diff --cached --quiet --exit-code; then
+  printf 'gp: no staged changes; nothing committed or pushed\n' >&2
+  exit 1
+else
+  result=$?
+  (( result == 1 )) || exit "$result"
+fi
+
+git diff --cached --stat
+git commit -m "$1"
+if "$push"; then
+  git -c "remote.$remote.mirror=false" push --no-force --no-follow-tags \
+    --recurse-submodules=no -- "$remote" "HEAD:$target"
+fi
 

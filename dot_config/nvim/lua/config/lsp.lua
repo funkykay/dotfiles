@@ -44,24 +44,19 @@ function M.setup()
     },
   })
 
-  vim.lsp.config("lua_ls", {
+  vim.lsp.config("*", {
     capabilities = M.capabilities(),
-    on_attach = function(_, bufnr)
-      M.attach(bufnr)
-    end,
-    settings = {
-      Lua = {
-        diagnostics = {
-          globals = { "vim" },
-        },
-        workspace = {
-          checkThirdParty = false,
-        },
-      },
-    },
   })
 
-  vim.lsp.enable("lua_ls")
+  local group = vim.api.nvim_create_augroup("NvimLsp", { clear = true })
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = group,
+    callback = function(args)
+      M.attach(args.buf)
+    end,
+  })
+
+  vim.lsp.enable({ "lua_ls", "gopls" })
 end
 
 return M

@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-curl -s ifconfig.me
+exec curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+  https://ifconfig.me/ip

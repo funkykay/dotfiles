@@ -42,12 +42,9 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Common interactive features, followed by Bash-specific adapters.
+# Shared tools, aliases and functions; completion is ready at this point.
 if [[ -r "$HOME/.config/shell/interactive.sh" ]]; then
   . "$HOME/.config/shell/interactive.sh"
-fi
-if [[ -r "$HOME/.config/bash/integrations.sh" ]]; then
-  . "$HOME/.config/bash/integrations.sh"
 fi
 
 # Only Bash-specific machine-local overrides belong here.

@@ -2,6 +2,8 @@ local M = {}
 
 function M.setup()
   local cmp = require("cmp")
+  -- Verify the configured source before enabling completion.
+  require("cmp_nvim_lsp")
 
   cmp.setup({
     snippet = {

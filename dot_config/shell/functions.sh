@@ -1,9 +1,9 @@
 # Interactive functions shared by Bash and Zsh; they run in the calling shell.
 
-# Clone one repository and enter its default destination directory.
+# Clone one repository and enter the destination only after a successful clone.
 gc() {
-  if (( $# != 1 )); then
-    printf 'usage: gc <repository>\n' >&2
+  if (( $# < 1 || $# > 2 )) || [[ -z $1 ]]; then
+    printf 'usage: gc <repository> [directory]\n' >&2
     return 2
   fi
 
@@ -13,17 +13,26 @@ gc() {
   fi
 
   local repository=$1
-  local destination=${repository%/}
-  destination=${destination##*/}
-  destination=${destination%.git}
-
-  command git clone -- "$repository" || return
-
-  if [[ ! -d $destination ]]; then
-    printf 'gc: cloned repository directory not found: %s\n' "$destination" >&2
-    return 1
+  local destination
+  if (( $# == 2 )); then
+    destination=$2
+  else
+    destination=${repository%/}
+    destination=${destination##*/}
+    destination=${destination##*:}
+    destination=${destination%.git}
   fi
 
+  case $destination in
+    ''|.|..)
+      printf 'gc: specify a destination directory for this repository\n' >&2
+      return 2
+      ;;
+  esac
+
+  # An explicit relative path also prevents CDPATH from selecting another clone.
+  [[ $destination == /* ]] || destination=./$destination
+  command git clone -- "$repository" "$destination" || return
   builtin cd -- "$destination"
 }
 

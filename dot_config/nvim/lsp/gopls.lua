@@ -1,10 +1,6 @@
-local common_lsp = require("common.lsp")
-local format_group = vim.api.nvim_create_augroup("NvimGoFormat", { clear = false })
-
-vim.lsp.config("gopls", {
-  capabilities = common_lsp.capabilities(),
+return {
   on_attach = function(_, bufnr)
-    common_lsp.attach(bufnr)
+    local format_group = vim.api.nvim_create_augroup("NvimGoFormat", { clear = false })
 
     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 
@@ -48,6 +44,4 @@ vim.lsp.config("gopls", {
       },
     },
   },
-})
-
-vim.lsp.enable("gopls")
+}

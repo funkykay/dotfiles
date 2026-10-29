@@ -9,7 +9,6 @@ tools/
 
 # Agent instructions belong to the source repository, not to Neovim.
 .config/nvim/AGENTS.md
-.config/nvim-go/AGENTS.md
 
 # Machine-local configuration and credentials must never be deployed.
 .config/zsh/local.zsh

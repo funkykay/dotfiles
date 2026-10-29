@@ -1,48 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if (( $# != 1 )) || [[ ! -d $1 ]]; then
+  printf 'usage: backup-chezmoi.sh <existing-backup-directory>\nBack up existing managed files from the destination, including local changes.\n' >&2
+  exit 2
+fi
 if ! command -v chezmoi >/dev/null 2>&1; then
   printf 'backup-chezmoi: chezmoi is not installed\n' >&2
   exit 127
 fi
 
-if [[ -z ${HOME:-} ]]; then
-  printf 'backup-chezmoi: HOME is not set\n' >&2
+# Private, unique directories avoid overwriting backups or exposing local data.
+umask 077
+backup_root=$(CDPATH= cd -- "$1" && pwd -P)
+destination=$(chezmoi execute-template '{{ .chezmoi.destDir }}')
+[[ -d $destination ]] || {
+  printf 'backup-chezmoi: destination directory not found: %s\n' "$destination" >&2
+  exit 1
+}
+backup_dir=$(mktemp -d "$backup_root/chezmoi-backup.XXXXXX")
+
+# Archive the live destination, not the rendered source from `chezmoi archive`.
+# NUL-separated paths handle whitespace, newlines and leading dashes.
+# Missing targets have nothing to save. Do not recurse into unexpected
+# directories or follow symlinks to unmanaged contents.
+if (
+  cd -- "$destination" || exit
+  chezmoi managed --include=files,symlinks --path-style=relative --nul-path-separator |
+    while IFS= read -r -d '' path; do
+      if [[ -e $path || -L $path ]]; then
+        printf './%s\0' "$path"
+      fi
+    done |
+    tar -czf "$backup_dir/files.tar.gz.partial" --no-recursion --null -T -
+); then
+  mv -- "$backup_dir/files.tar.gz.partial" "$backup_dir/files.tar.gz"
+  printf 'Backed up existing managed paths to %s/files.tar.gz\n' "$backup_dir"
+else
+  printf 'backup-chezmoi: backup failed; incomplete archive in %s\n' "$backup_dir" >&2
   exit 1
 fi
-
-timestamp=$(date '+%Y%m%d-%H%M%S')
-backup_dir="$HOME/dotfiles/backup-$timestamp"
-copied=0
-
-status=$(chezmoi status --include=files,symlinks --path-style=absolute)
-
-while IFS= read -r line; do
-  [[ ${#line} -ge 4 ]] || continue
-
-  target_status=${line:1:1}
-  [[ $target_status != " " && $target_status != "R" ]] || continue
-
-  path=${line:3}
-  [[ -e $path || -L $path ]] || continue
-
-  case "$path" in
-    "$HOME"/*) relative=${path#"$HOME"/} ;;
-    *)
-      printf 'backup-chezmoi: skipping path outside HOME: %s\n' "$path" >&2
-      continue
-      ;;
-  esac
-
-  destination="$backup_dir/$relative"
-  mkdir -p -- "$(dirname -- "$destination")"
-  cp -a -- "$path" "$destination"
-  ((copied += 1))
-done <<< "$status"
-
-if (( copied == 0 )); then
-  printf 'No existing files would be changed by chezmoi apply.\n'
-  exit 0
-fi
-
-printf 'Backed up %d path(s) to %s\n' "$copied" "$backup_dir"

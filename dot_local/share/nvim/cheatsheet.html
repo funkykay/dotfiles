@@ -232,14 +232,14 @@
     <header>
       <h1>Neovim Cheat Sheet</h1>
       <p class="subtitle">
-        Übersicht über die konfigurierte gemeinsame Neovim-Basis und das Go-spezifische Setup.
+        Übersicht über die Neovim-Konfiguration mit dateitypabhängiger Go-Unterstützung.
       </p>
 
       <div class="legend">
         <span><kbd>Leader</kbd> = Leertaste</span>
         <span><kbd>LocalLeader</kbd> = ,</span>
-        <span><code>nvim</code> = allgemeines Setup</span>
-        <span><code>nvim_go</code> = Go-Setup</span>
+        <span><code>nvim</code> = Editor starten</span>
+        <span><code>nvim main.go</code> = Go-Datei öffnen</span>
       </div>
     </header>
 
@@ -296,58 +296,39 @@
               <div class="keys">
                 <kbd>Ctrl</kbd><kbd>j</kbd>
               </div>
-              <div class="description">Nächsten Eintrag auswählen</div>
+              <div class="description">Nächsten Eintrag auswählen (Insertmodus)</div>
             </li>
 
             <li class="row">
               <div class="keys">
                 <kbd>Ctrl</kbd><kbd>k</kbd>
               </div>
-              <div class="description">Vorherigen Eintrag auswählen</div>
+              <div class="description">Vorherigen Eintrag auswählen (Insertmodus)</div>
             </li>
           </ul>
         </article>
 
         <article class="card">
           <div class="card-header">
-            <h3>File Chooser</h3>
+            <h3>Dateioperationen mit Neovim</h3>
           </div>
 
           <ul class="rows">
             <li class="row">
-              <div class="keys">
-                <kbd>Ctrl</kbd><kbd>n</kbd>
-              </div>
-              <div class="description">
-                Neue Datei anlegen
-                <small>
-                  Relative Pfade beziehen sich auf das aktuelle Telescope-Arbeitsverzeichnis.
-                </small>
-              </div>
+              <div class="keys"><code>:edit pfad</code></div>
+              <div class="description">Neue oder vorhandene Datei öffnen; mit <code>:write</code> speichern</div>
             </li>
-
             <li class="row">
-              <div class="keys">
-                <kbd>Ctrl</kbd><kbd>r</kbd>
-              </div>
-              <div class="description">
-                Ausgewählte Datei umbenennen
-                <small>
-                  Relative Zielpfade beziehen sich auf das Verzeichnis der ausgewählten Datei.
-                </small>
-              </div>
+              <div class="keys"><code>:Explore</code></div>
+              <div class="description">Mitgelieferten Dateibrowser netrw öffnen</div>
             </li>
-
             <li class="row">
-              <div class="keys">
-                <kbd>Ctrl</kbd><kbd>d</kbd>
-              </div>
-              <div class="description">
-                Ausgewählte Datei löschen
-                <small>
-                  Vor dem Löschen wird eine Bestätigung verlangt. Geöffnete Dateien werden nicht gelöscht.
-                </small>
-              </div>
+              <div class="keys"><kbd>%</kbd> / <kbd>R</kbd> / <kbd>D</kbd></div>
+              <div class="description">In netrw: Datei anlegen / umbenennen / löschen</div>
+            </li>
+            <li class="row">
+              <div class="keys"><code>:bdelete</code></div>
+              <div class="description">Buffer schließen; die Datei bleibt erhalten</div>
             </li>
           </ul>
         </article>
@@ -693,7 +674,7 @@
     </section>
 
     <section class="section">
-      <h2>Single-File Workflow</h2>
+      <h2>Dateien und Buffer</h2>
 
       <div class="grid">
         <article class="card">
@@ -702,12 +683,12 @@
           </div>
 
           <ul class="feature-list">
-            <li>Beim Start ohne geöffnete Datei wird automatisch Telescope geöffnet</li>
-            <li>Es bleibt jeweils nur eine normale Datei als Buffer geöffnet</li>
-            <li>Beim Dateiwechsel wird die vorherige geänderte Datei automatisch gespeichert</li>
-            <li>Nach erfolgreichem Speichern wird der vorherige Buffer geschlossen</li>
-            <li>Schlägt das Speichern fehl, wird zur vorherigen Datei zurückgekehrt</li>
-            <li>Nach dem Schließen der letzten Datei öffnet sich erneut die Dateisuche</li>
+            <li>Beim interaktiven Start ohne Dateiangabe öffnet sich Telescope einmalig im leeren Startbuffer, sofern die Plugins bereit sind</li>
+            <li>Bei Standardeingabe, geladenen Sessions und im Headless-Modus öffnet sich die Dateisuche nicht automatisch</li>
+            <li>Mehrere Dateien können als Buffer geöffnet bleiben</li>
+            <li>Änderungen bleiben beim Dateiwechsel ungespeichert im jeweiligen Buffer</li>
+            <li>Speichern und Schließen erfolgen über die normalen Neovim-Befehle</li>
+            <li>Nach dem Schließen eines Buffers öffnet sich keine automatische Dateisuche</li>
           </ul>
         </article>
       </div>
@@ -773,11 +754,11 @@
       <div class="grid">
         <article class="card">
           <div class="card-header">
-            <h3>Gemeinsame Basis</h3>
+            <h3>Allgemein</h3>
           </div>
 
           <ul class="feature-list">
-            <li>Lua-Parser wird über die gemeinsame Konfiguration bereitgestellt</li>
+            <li>Lua- und Go-Parser werden über die Neovim-Konfiguration bereitgestellt</li>
             <li>Treesitter-Highlighting startet automatisch für verfügbare Parser</li>
             <li>Treesitter-basierte Einrückung wird automatisch aktiviert</li>
           </ul>
@@ -810,11 +791,11 @@
           <ul class="rows">
             <li class="row">
               <div class="keys">
-                <code>nvim_go</code>
+                <code>nvim main.go</code>
               </div>
               <div class="description">
-                Go-spezialisiertes Neovim starten
-                <small>Alias für <code>NVIM_APPNAME=nvim-go nvim</code>.</small>
+                Go-Datei mit Neovim öffnen
+                <small>Go-Unterstützung wird anhand des Dateityps aktiviert.</small>
               </div>
             </li>
           </ul>
@@ -860,8 +841,8 @@
           </div>
 
           <ul class="feature-list">
-            <li>Das Go-Setup verwendet Tabs statt Leerzeichen</li>
-            <li>Alle sonstigen allgemeinen Optionen stammen aus <code>nvim-common</code></li>
+            <li>Go-Buffer verwenden Tabs statt Leerzeichen</li>
+            <li>Allgemeine Optionen stehen unter <code>nvim/lua/config/options.lua</code></li>
           </ul>
         </article>
       </div>
@@ -873,7 +854,7 @@
       <div class="grid">
         <article class="card">
           <div class="card-header">
-            <h3>Gemeinsam installiert</h3>
+            <h3>Installiert</h3>
           </div>
 
           <ul class="feature-list">

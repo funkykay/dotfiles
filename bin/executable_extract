@@ -1,8 +1,24 @@
 #!/usr/bin/env bash
-case "$1" in
-  *.tar.gz) tar xzf "$1" ;;
-  *.zip) unzip "$1" ;;
-  *.tar) tar xf "$1" ;;
-  *) echo "unknown format" ;;
+set -e
+
+if (( $# != 1 )) || [[ ! -f $1 ]]; then
+  printf 'usage: extract <archive.tar.gz|archive.tar|archive.zip>\n' >&2
+  exit 2
+fi
+
+archive=$1
+[[ $archive == /* ]] || archive=./$archive
+case $archive in
+  *.tar.gz|*.tar|*.zip) ;;
+  *) printf 'extract: unsupported archive format: %s\n' "$1" >&2; exit 2 ;;
 esac
 
+# A new directory prevents accidental overwrites in the working directory.
+destination=./${archive##*/}.d
+mkdir -- "$destination"
+printf 'Extracting into %s\n' "$destination"
+case $archive in
+  *.tar.gz) exec tar -xzf "$archive" -C "$destination" ;;
+  *.tar) exec tar -xf "$archive" -C "$destination" ;;
+  *.zip) exec unzip -n "$archive" -d "$destination" ;;
+esac

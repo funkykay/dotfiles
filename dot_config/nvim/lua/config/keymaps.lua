@@ -42,10 +42,6 @@ end, {
   end,
 })
 
-map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Find files" })
-map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Fulltext search" })
-map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Recent files" })
-
 map("n", "<leader>mm", ":Make ", { desc = "Make target" })
 map("n", "<leader>mq", "<cmd>copen<cr>", { desc = "Make quickfix" })
 map("n", "[q", "<cmd>cprevious<cr>", { desc = "Quickfix: Previous" })

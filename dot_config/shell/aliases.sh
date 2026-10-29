@@ -14,10 +14,6 @@ fi
 alias ..='cd ..'
 alias ...='cd ../..'
 
-if command -v nvim >/dev/null 2>&1; then
-  alias nvim_go='NVIM_APPNAME=nvim-go nvim'
-fi
-
 if command -v kubectl >/dev/null 2>&1; then
   alias k='kubectl'
 fi

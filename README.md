@@ -1,197 +1,106 @@
 # Dotfiles für Linux und macOS
 
-Dieses Repository ist die chezmoi-Source für meine persönliche
-Linux- und macOS-Konfiguration. Die Dateien hier sind die Source of Truth; Dateien unter
-`$HOME` sind daraus abgeleitete Live-Konfiguration und werden nicht direkt
-gepflegt.
+Persönliche Bash-, Zsh-, Git-, Vim- und Neovim-Konfiguration, verwaltet mit
+chezmoi. Dieses Repository ist die maßgebliche Source; chezmoi erzeugt daraus
+Konfiguration und Utilities unter `$HOME`.
 
-## Verwaltung mit chezmoi
+## Aufbau
 
-Chezmoi verwaltet die Dateien in diesem Repository und überträgt sie nach
-`$HOME`. Vor dem Anwenden Änderungen mit `chezmoi status` und `chezmoi diff`
-prüfen. Lokale Anpassungen zuerst in die Source übernehmen oder bewusst in
-unverwaltete lokale Dateien auslagern. Erst anschließend `chezmoi apply`
-ausführen; einzelne Dateien können gezielt angewendet werden.
+| Pfad | Aufgabe |
+| --- | --- |
+| `dot_bash*`, `dot_zsh*`, `dot_zprofile`, `dot_profile` | Shell-Startdateien, native Optionen, History und Prompts |
+| `dot_config/shell/` | Gemeinsame Umgebung und PATH in `env.sh`, interaktive Tools in `interactive.sh`, Aliase und Funktionen |
+| `dot_config/nvim/` | Eine Neovim-Konfiguration: `init.lua`, allgemeine Module in `lua/config/`, Server in `lsp/`, Spracheinstellungen in `after/ftplugin/` |
+| `dot_gitconfig`, `dot_vimrc` | Git-Einstellungen und einfache Vim-Konfiguration |
+| `bin/executable_*` | Eigenständige Befehle, deployed als `~/bin/<name>` |
+| `tools/` | Validierung, Abhängigkeitscheck und Backup für die Source |
 
-Repository-Metadaten wie `README.md`, `AGENTS.md`, `.gitignore`,
-`summarize.json` und `tools/` sind über `.chezmoiignore` ausgeschlossen.
-Host-spezifische Templates werden nur bei konkretem Bedarf ergänzt.
+chezmoi übersetzt etwa `dot_config` nach `.config` und `executable_gp` nach
+`gp` mit Ausführungsrechten. `.chezmoiignore` schließt Dokumentation, `tools/`
+und maschinenlokale Konfiguration vom Deployment aus.
 
-## Shell-Architektur
+## Einrichtung
 
-Bash und Zsh laden dieselbe allgemeine Umgebung aus
-`~/.config/shell/env.sh`. Diese lädt zunächst die optionale lokale Datei
-`~/.config/shell/local.sh`. Das gilt für Login-Sitzungen und für interaktive
-Shells, die direkt gestartet werden.
+Git und chezmoi separat installieren. Bash wird für die Skripte benötigt;
+Zsh ist optional. Für Neovim wird Version 0.11 oder neuer vorausgesetzt.
+Development-Tools wie `gopls`, `lua-language-server`, `dlv`, `rg` und `make`
+werden außerhalb Neovims installiert; `fd`/`fdfind` ist optional.
 
-| Datei | Inhalt | Im Repository |
-| --- | --- | --- |
-| `~/.config/shell/env.sh` | Allgemeine Umgebungsvariablen und wiederholbar aufgebaute Standardpfade | Ja |
-| `~/.config/shell/local.sh` | Persönliche Variablen, Pfade und gemeinsame lokale Helfer für Bash und Zsh | Nein |
-| `~/.config/bash/local.sh` | Bash-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
-| `~/.config/zsh/local.zsh` | Zsh-spezifische lokale Aliases, Funktionen und Integrationen | Nein |
-| `~/.gitconfig.local` | Persönlicher Git-Name, E-Mail und weitere lokale Git-Einstellungen | Nein |
-
-`local.sh` verwendet POSIX-Shell-Syntax, damit Bash und Zsh sie unverändert
-lesen können. Sie enthält keine Zsh-Arrays, Bash-Completion oder Prompt-Logik.
-Lokale PATH-Ergänzungen sollen vorhandene Einträge erkennen, da eine
-Login-Sitzung die gemeinsame Umgebung mehrfach laden kann. Persönliche Werte
-und Zugangsdaten gehören ausschließlich in lokale Dateien. Diese werden
-separat auf jedem Rechner eingerichtet und mit `chmod 600` geschützt.
-`.gitignore` schließt auch ihre üblichen chezmoi-Source-Namen aus;
-`.chezmoiignore` verhindert das Deployment dieser Dateien.
-
-Beide Shells nutzen dieselben Aliase (`ll`, `la`, `l`, `..`, `...`, `k`,
-`nvim_go`) und Funktionen (`gc`, `copy`). Die Farbdarstellung von `ls` wird an
-GNU- beziehungsweise BSD/macOS-`ls` angepasst. Lokale, shellübergreifende Helfer
-können in einem interaktiven Abschnitt von `shell/local.sh` stehen:
+Auf einem neuen Rechner `REPOSITORY_URL` durch die URL dieses Repositories
+ersetzen:
 
 ```sh
-case $- in
-  *i*)
-    # Gemeinsame lokale Aliase und Funktionen hier definieren.
-    ;;
-esac
+chezmoi init REPOSITORY_URL
+cd "$(chezmoi source-path)"
+bash tools/validate.sh
+chezmoi diff
 ```
 
-Variablen und PATH-Ergänzungen stehen außerhalb dieses Abschnitts. So bleiben
-sie auch für Login-Sitzungen verfügbar, ohne dort interaktive Funktionen zu
-laden. `shell/local.sh` wird vor den verwalteten interaktiven Modulen geladen;
-für eigene lokale Helfer daher Namen verwenden, die nicht bereits verwaltet
-werden. Shell-spezifische lokale Overrides werden zuletzt geladen.
+Nach Prüfung der Änderungen mit `chezmoi apply` deployen und eine neue Shell
+starten. Beim ersten regulären Neovim-Start können lazy.nvim, Plugins und
+Treesitter-Parser heruntergeladen werden.
 
-Die verwalteten Startdateien und Module haben folgende Aufgaben:
+Persönliche Einstellungen werden separat auf jedem Rechner eingerichtet:
 
-- `dot_config/shell/env.sh` lädt die gemeinsame lokale Umgebung, Standardpfade
-  und das optionale Cargo-Environment.
-- `dot_config/shell/login.sh` initialisiert die optionalen pyenv-Login-Pfade
-  für beide Shells.
-- `dot_config/shell/interactive.sh` lädt NVM und SDKMAN, richtet Terminalfarben
-  ein und lädt die gemeinsamen Aliase und Funktionen.
-- `dot_config/shell/aliases.sh` und `functions.sh` sind die gemeinsame Quelle
-  für interaktive Befehle in Bash und Zsh.
-- `dot_config/bash/integrations.sh` und `dot_config/zsh/integrations.zsh`
-  enthalten ausschließlich passende Shell-Adapter: goenv-/pyenv-Initialisierung
-  und kubectl-/Angular-Completion. Beide Shells erhalten dieselben Werkzeuge,
-  sofern sie installiert sind. Zsh kann eine vorhandene lokale
-  `~/.ng-completion.zsh` weiterverwenden.
-- `dot_bashrc` und `dot_zshrc` richten die jeweiligen History-Optionen, Prompts
-  und Completion-Systeme ein, laden die gemeinsamen Module und zuletzt die
-  shell-spezifischen lokalen Overrides. Die History-Dateien bleiben getrennt.
-- `dot_bash_profile` leitet Bash-Login-Sitzungen an `.profile` weiter.
-- `dot_profile` und `dot_zprofile` laden gemeinsame Login-Module. `.profile`
-  lädt zusätzlich `.bashrc` für Bash und kann auf tty1 X starten.
-- `dot_zshenv` stellt Cargo auch für nicht interaktive Zsh-Prozesse bereit.
+| Unverwaltete Datei | Inhalt |
+| --- | --- |
+| `~/.config/shell/local.sh` | Gemeinsame Variablen, Pfade und Helfer für Bash und Zsh; POSIX-Syntax, interaktive Helfer nur in interaktiven Shells |
+| `~/.config/bash/local.sh`, `~/.config/zsh/local.zsh` | Ausschließlich shell-spezifische Overrides |
+| `~/.gitconfig.local` | Git-Identität und lokale Git-Einstellungen |
 
-Oh My Zsh ist optional. Seine installierten Plugins für Eingabevorschläge und
-Syntax-Highlighting bleiben Zsh-spezifische Oberflächenfunktionen. kubectl wird
-über die eigenen Adapter eingerichtet, damit die gemeinsame Konfiguration
-auch ohne Oh My Zsh funktioniert.
+Die gemeinsame lokale Umgebung wird vor der Tool-Initialisierung geladen,
+shell-spezifische Overrides zuletzt. Vertrauliche Dateien mit `chmod 600`
+schützen und außerhalb der Source halten.
 
-Die verwaltete Git-Konfiguration lädt `~/.gitconfig.local` zuletzt. Fehlt die
-Datei auf einem neuen Rechner, muss die persönliche Identität dort zunächst
-separat eingerichtet werden.
+## Nutzung
 
-`bin/` ist für eigenständige Utilities vorgesehen. `extract`, `public-ip`,
-`json` und `shell-info` sind solche Utilities; `shell-info` zeigt die
-Shell-Konfigurationspfade, ausgewählte Umgebungsvariablen und `PATH` der
-aktuellen Sitzung an. `gp` führt dagegen `git add .`, `git commit` und
-`git push` aus; `update` führt ein vollständiges apt-Upgrade mit `sudo` aus.
-Beide Skripte bleiben vorerst unverändert, sind aber bewusst als riskante
-Convenience-Kommandos einzustufen und sollten nicht automatisiert aufgerufen
-werden. Das Utility `public-ip` zeigt die öffentliche IP-Adresse an und wird als
-`~/bin/public-ip` deployed, sodass das übliche iproute2-Kommando frei bleibt.
+Änderungen im Source-Verzeichnis vornehmen (`chezmoi source-path`), mit
+`chezmoi diff` prüfen und bewusst mit `chezmoi apply` übernehmen. Lokale
+Abweichungen bei Bedarf gezielt mit `chezmoi merge <datei>` oder
+`chezmoi re-add <datei>` in die Source übernehmen; `re-add` überspringt unter
+anderem Templates und Symlinks.
 
-## Neovim-Architektur
+| Befehl | Verhalten |
+| --- | --- |
+| `gc <repository> [directory]` | Klonen und nach Erfolg ins Ziel wechseln; gemeinsame Shell-Funktion |
+| `copy` | Standardeingabe über OSC52 an die Terminal-Zwischenablage senden |
+| `gp "Nachricht"` | Nur bereits gestagte Änderungen committen; vorher `git add <pfade>` und `git diff --cached` verwenden |
+| `gp --push "Nachricht"` | Anschließend den aktuellen Branch an seinen Remote-Upstream pushen; kein Force-Push |
+| `update` / `update --upgrade` | Auf Debian/Ubuntu Upgrade simulieren / Paketlisten aktualisieren und Upgrade im Terminal bestätigen |
+| `extract <archive>` | `.tar.gz`, `.tar` oder `.zip` in ein neues `<archivname>.d` entpacken |
+| `json [argumente]` | `python3 -m json.tool` aufrufen |
+| `public-ip` | Öffentliche IP über HTTPS abfragen |
+| `shell-info` | Login-Shell laut `$SHELL`, Konfigurationspfade und geerbte Umgebung anzeigen |
 
-Die Neovim-Konfiguration besteht aus einer gemeinsamen Basis und darauf
-aufbauenden Produkten:
+Neovim mit `nvim <datei>` starten. Es bietet Telescope, LSP, Completion und DAP;
+Plugin-Spezifikation und Lockfile liegen in derselben Konfiguration.
+Leader ist die Leertaste: `<leader>ff` sucht Dateien, `<leader>fg` Text und
+`<leader>fr` zuletzt geöffnete Dateien. Ohne Dateiangabe erscheint die Suche
+beim leeren interaktiven Start einmalig. Dateioperationen erfolgen über
+`:edit`, `:write` und `:Explore`; `:Make` nutzt Quickfix. Go erhält Formatierung
+über gopls, Buffer-lokale Tabs und Delve-Debugging. F5 startet oder setzt eine
+Debug-Sitzung fort, `<leader>db` schaltet Breakpoints.
 
-- `dot_config/nvim-common` enthält die vollständige allgemeine
-  Neovim-Konfiguration.
-- `dot_config/nvim` lädt diese gemeinsame Basis unverändert.
-- `dot_config/nvim-go` lädt dieselbe Basis und ergänzt ausschließlich
-  Go-spezifische Konfiguration.
+## Prüfung und Sicherung
 
-`nvim-go` wird mit `NVIM_APPNAME=nvim-go nvim` gestartet. Beide Produkte nehmen
-`~/.config/nvim-common` in ihren Runtimepath auf.
+`bash tools/validate.sh` prüft Shell- und Lua-Syntax, chezmoi-Source und
+Ignore-Regeln sowie die Verfügbarkeit der Abhängigkeiten. Die Prüfung lädt
+keine Benutzerkonfiguration, installiert nichts und verwendet temporäre
+HOME-, Cache- und Statuspfade unter `/tmp`. Source und echtes Home bleiben
+unverändert. Syntax- und Source-Fehler liefern Exitstatus 1; fehlende optionale
+Prüfer erscheinen als `[skip]`, fehlende Laufzeitwerkzeuge als Hinweise.
+Versionen und Laufzeitverhalten werden nicht geprüft.
 
-### nvim-common
+`bash tools/check-tools.sh` prüft nur die Verfügbarkeit im `PATH` und liefert
+bei fehlenden benötigten Befehlen Exitstatus 1.
 
-Die gemeinsame Schicht enthält:
+`bash tools/backup-chezmoi.sh /vorhandener/backup-ordner` sichert vorhandene
+verwaltete Dateien und Symlinks einschließlich lokaler Änderungen in einem
+neuen privaten Unterordner. Den Backup-Ordner außerhalb der Source wählen.
+Die Archive sind unverschlüsselt, enthalten keine unverwaltete lokale
+Konfiguration und bilden fehlende Dateien nicht ab. Fehler hinterlassen
+`.partial`; zur Wiederherstellung zunächst separat entpacken und prüfen.
 
-- allgemeine Editor-Optionen
-- lazy.nvim als Plugin-Manager
-- TokyoNight
-- Lualine
-- Telescope
-- Gitsigns
-- Treesitter
-- nvim-lspconfig
-- nvim-cmp und cmp-nvim-lsp
-- nvim-dap
-- Lua-LSP über lua-language-server
-- allgemeine LSP-Navigation und Code-Actions
-- allgemeine Diagnostic-Navigation und Diagnostic-Darstellung
-- allgemeine DAP-Keymaps
-- File-, Volltext- und Recent-File-Suche über Telescope
-- Dateioperationen im Telescope-File-Chooser zum Anlegen, Umbenennen und Löschen
-- automatischen Telescope-File-Chooser, wenn keine Datei geöffnet ist
-- Single-File-Workflow
-- automatisches Speichern und Schließen der vorherigen Datei beim Dateiwechsel
-- Make-Command mit Target-Completion
-- Quickfix-Navigation
-- Terminal-`Esc`-Mapping
-- visuelles Hervorheben von Yanks
-
-Die gemeinsame Plugin-Spezifikation liegt unter
-`dot_config/nvim-common/lua/common/plugins.lua`. Der gemeinsame Lockfile liegt
-unter `dot_config/nvim-common/lazy-lock.json`.
-
-Plugin-Installationen werden von beiden Neovim-Produkten gemeinsam unter
-`~/.local/share/nvim-common/lazy` verwendet.
-
-Treesitter installiert in der gemeinsamen Basis den Lua-Parser und aktiviert
-Highlighting und Indentation für Dateitypen, für die ein Parser verfügbar ist.
-Weitere sprachspezifische Parser werden von den jeweiligen Produkten ergänzt.
-
-### nvim
-
-Die allgemeine Neovim-Konfiguration ist nur noch ein dünner Einstiegspunkt und
-lädt vollständig `nvim-common`.
-
-### nvim-go
-
-Das Go-Setup ergänzt die gemeinsame Basis ausschließlich um:
-
-- Go-Einrückung mit Tabs
-- gopls
-- automatische Go-Formatierung über gopls mit `gofumpt`
-- gopls Inlay Hints und Analysen
-- Treesitter-Parser für Go, Go Modules, Go Sum und Go Workspaces
-- Delve als Go-DAP-Adapter
-- Debug-Konfigurationen für Go-Dateien, Packages und Tests
-
-Bewusst nicht enthalten sind Filetree, Bufferline, Trouble, Which-Key, Noice,
-Notify, Dressing, Mason, go.nvim, LuaSnip und DAP-UI.
-
-gopls, lua-language-server und dlv werden nicht durch Neovim installiert,
-sondern müssen als normale System- oder Development-Tools im `PATH` vorhanden
-sein. `tools/check-tools.sh` prüft diese Abhängigkeiten.
-
-Der lazy.nvim-Update-Checker ist deaktiviert.
-
-## Bootstrap auf weiteren Rechnern
-
-Nachdem chezmoi separat und bewusst installiert wurde, ist der vorgesehene
-Workflow:
-
-1. Diese Source als verwaltete chezmoi-Source einrichten.
-2. Zielpfade und geplante Änderungen zunächst mit `chezmoi diff` prüfen.
-3. Insbesondere Shell-Startdateien, Git-Identität und ignorierte Metadaten
-   kontrollieren.
-4. Erst nach dieser Prüfung ausdrücklich `chezmoi apply` ausführen.
-
-Installation, Initialisierung und Apply werden nicht automatisch durch dieses
-Repository ausgeführt. Lokale Zugangsdaten werden separat eingerichtet und
-gehören niemals in die chezmoi-Source.
+Für einen Export des aus der Source erzeugten Sollzustands genügt
+`chezmoi archive --output=/externer/pfad/dotfiles.tar.gz`. Das sichert keine
+abweichenden lokalen Inhalte. Arbeitsregeln für Agenten stehen in [AGENTS.md](AGENTS.md).

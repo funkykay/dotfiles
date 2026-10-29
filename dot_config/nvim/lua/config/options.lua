@@ -33,7 +33,7 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
-local yank_group = vim.api.nvim_create_augroup("NvimCommonYank", { clear = true })
+local yank_group = vim.api.nvim_create_augroup("NvimYank", { clear = true })
 
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = yank_group,
