@@ -56,7 +56,7 @@ render_and_verify() {
     --nul-path-separator > "$scratch/managed"
   while IFS= read -r -d '' path; do
     case $path in
-      README.md|AGENTS.md|.gitignore|summarize.json|tools|tools/*|\
+      README.md|AGENTS.md|.gitignore|tools|tools/*|\
       .agents|.agents/*|.codex|.codex/*|.config/nvim/AGENTS.md|\
       .config/shell/local.sh|.config/bash/local.sh|.config/zsh/local.zsh|.gitconfig.local)
         fail "excluded target would be deployed: $path" ;;
@@ -92,7 +92,7 @@ source_dir="$scratch/source fixture"
 destination="$scratch/fixture target"
 mkdir -p "$source_dir"
 cp "$repo/.chezmoiignore" "$source_dir/.chezmoiignore"
-for path in README.md AGENTS.md .gitignore summarize.json tools/probe \
+for path in README.md AGENTS.md .gitignore tools/probe \
   dot_agents/probe dot_codex/probe dot_config/nvim/AGENTS.md \
   dot_config/shell/local.sh.tmpl dot_config/bash/local.sh.tmpl \
   dot_config/zsh/local.zsh.tmpl private_dot_gitconfig.local.tmpl; do
@@ -116,7 +116,7 @@ printf 'rendered template\n' > "$scratch/expected-template"
 cmp "$scratch/expected-template" "$destination/.rendered"
 [[ -x $destination/tool && -L $destination/link ]] || fail 'source attributes were not rendered'
 [[ ! -e $destination/run_once_fixture.sh && ! -e $destination/fixture.sh ]] || fail 'script was deployed'
-for path in README.md AGENTS.md .gitignore summarize.json tools .agents .codex \
+for path in README.md AGENTS.md .gitignore tools .agents .codex \
   .config/nvim/AGENTS.md .config/shell/local.sh .config/bash/local.sh \
   .config/zsh/local.zsh .gitconfig.local; do
   [[ ! -e $destination/$path && ! -L $destination/$path ]] || fail "ignored target exists: $path"

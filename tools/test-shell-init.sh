@@ -14,7 +14,7 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 # Only these utilities can be reached by startup code. In particular, never
-# discover real version managers, kubectl, ng, startx or Homebrew through PATH.
+# discover real version managers, kubectl, ng or Homebrew through PATH.
 mkdir -p "$scratch/system-bin"
 for tool in bash env uname sed awk grep tr sort cat dirname ls readlink; do
   tool_path=$(PATH=/usr/bin:/bin command -v "$tool")

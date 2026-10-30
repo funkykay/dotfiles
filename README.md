@@ -52,6 +52,11 @@ Die gemeinsame lokale Umgebung wird vor der Tool-Initialisierung geladen,
 shell-spezifische Overrides zuletzt. Vertrauliche Dateien mit `chmod 600`
 schützen und außerhalb der Source halten.
 
+Zsh verwendet native Completion über `compinit`, eigene History-Einstellungen
+und einen einfachen Prompt. Ein Shell-Framework oder zusätzliche Zsh-Plugins
+werden nicht geladen. Die Login-Profile richten die Shell-Umgebung ein;
+grafische Sitzungen werden separat gestartet.
+
 `env.sh` setzt allgemeine Suchpfade und macht goenv/pyenv über deren `bin`
 auffindbar. pyenv richtet seine Shims mit `pyenv init --path --no-rehash sh`
 ein; für goenv wird nur das vorhandene Shim-Verzeichnis ergänzt, da goenv

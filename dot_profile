@@ -7,16 +7,3 @@ fi
 if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
 fi
-
-# Start X only for an interactive login on the first Linux virtual console.
-case $- in
-  *i*)
-    if [ -z "${DISPLAY:-}" ] && command -v tty >/dev/null 2>&1; then
-      _profile_tty=$(tty 2>/dev/null) || _profile_tty=
-      if [ "$_profile_tty" = "/dev/tty1" ] && command -v startx >/dev/null 2>&1; then
-        startx
-      fi
-      unset _profile_tty
-    fi
-    ;;
-esac
