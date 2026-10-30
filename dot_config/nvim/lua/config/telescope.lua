@@ -5,9 +5,26 @@ function M.setup(opts)
   local builtin = require("telescope.builtin")
   telescope.setup(opts)
 
-  vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
-  vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Fulltext search" })
-  vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
+  -- Builtin pickers defer loading modules until invocation, beyond lazy's
+  -- config error boundary. Keep those errors local to the requested picker.
+  local function open(picker)
+    local ok, err = xpcall(function()
+      builtin[picker]()
+    end, debug.traceback)
+    if not ok then
+      vim.notify("Telescope " .. picker .. " failed:\n" .. tostring(err), vim.log.levels.WARN)
+    end
+  end
+
+  vim.keymap.set("n", "<leader>ff", function()
+    open("find_files")
+  end, { desc = "Find files" })
+  vim.keymap.set("n", "<leader>fg", function()
+    open("live_grep")
+  end, { desc = "Fulltext search" })
+  vim.keymap.set("n", "<leader>fr", function()
+    open("oldfiles")
+  end, { desc = "Recent files" })
 
   -- Open the file picker once on an empty interactive startup.
   if vim.fn.argc() == 0 and not vim.tbl_contains(vim.v.argv, "-") then
@@ -26,10 +43,7 @@ function M.setup(opts)
           return
         end
 
-        local ok, err = xpcall(builtin.find_files, debug.traceback)
-        if not ok then
-          vim.notify("Could not open Telescope: " .. tostring(err), vim.log.levels.WARN)
-        end
+        open("find_files")
       end),
     })
   end

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Parse repository files without sourcing them or loading live configuration.
+# Validate source and exercise shell startup only in disposable test homes.
 set -u
 
 if (( $# != 0 )); then
@@ -39,7 +39,7 @@ check() {
 }
 
 printf 'Shell syntax\n'
-for file in dot_bashrc dot_bash_profile dot_profile dot_config/shell/*.sh bin/* tools/*.sh; do
+for file in dot_bashrc dot_bash_profile dot_profile dot_config/shell/*.sh bin/* tools/*.sh tools/tests/*.sh; do
   check "bash: $file" isolated "$BASH" --noprofile --norc -n -- "$file"
 done
 for file in dot_bash_profile dot_profile dot_config/shell/env.sh; do
@@ -54,9 +54,12 @@ else
   skipped=$((skipped + 1))
 fi
 
+printf '\nShell integration\n'
+check 'isolated Bash/Zsh startup' isolated "$BASH" tools/test-shell-init.sh
+
 printf '\nLua syntax\n'
 lua_files=()
-if find dot_config/nvim -type f -name '*.lua' -print0 > "$scratch/lua-files"; then
+if find dot_config/nvim tools/tests -type f -name '*.lua' -print0 > "$scratch/lua-files"; then
   while IFS= read -r -d '' file; do
     lua_files+=("$file")
   done < "$scratch/lua-files"
@@ -88,27 +91,18 @@ else
   skipped=$((skipped + 1))
 fi
 
+printf '\nNeovim plugin failure cases\n'
+if command -v nvim >/dev/null 2>&1; then
+  check 'isolated bootstrap and plugin configuration' isolated nvim \
+    --headless -u NONE -i NONE --noplugin -n -l tools/tests/nvim-plugins.lua
+else
+  printf '[skip] Neovim plugin tests: nvim is not installed\n'
+  skipped=$((skipped + 1))
+fi
+
 printf '\nChezmoi source and ignore rules\n'
 if command -v chezmoi >/dev/null 2>&1; then
-  : > "$scratch/chezmoi.toml"
-  if isolated chezmoi --source "$repo" --config "$scratch/chezmoi.toml" \
-    --destination "$scratch/home" --cache "$scratch/cache" \
-    --persistent-state "$scratch/chezmoi-state.boltdb" \
-    --refresh-externals=never --no-pager --no-tty --dry-run \
-    managed --exclude=externals,scripts --path-style=relative --nul-path-separator > "$scratch/managed"; then
-    printf '[ok]   chezmoi source parses\n'
-    while IFS= read -r -d '' file; do
-      case $file in
-        README.md|AGENTS.md|.gitignore|summarize.json|tools|tools/*|.config/nvim/AGENTS.md)
-          printf '[fail] repository metadata would be deployed: %s\n' "$file" >&2
-          failed=1
-          ;;
-      esac
-    done < "$scratch/managed"
-  else
-    printf '[fail] chezmoi source\n' >&2
-    failed=1
-  fi
+  check 'target rendering, ignore rules and backup round-trips' isolated "$BASH" tools/test-chezmoi.sh
 else
   printf '[skip] chezmoi: not installed\n'
   skipped=$((skipped + 1))

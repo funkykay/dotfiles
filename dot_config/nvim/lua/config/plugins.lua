@@ -22,6 +22,7 @@ return {
   },
   {
     "nvim-telescope/telescope.nvim",
+    main = "config.telescope",
     dependencies = {
       "nvim-lua/plenary.nvim",
     },
@@ -46,9 +47,6 @@ return {
           sorting_strategy = "ascending",
         },
       }
-    end,
-    config = function(_, opts)
-      require("config.telescope").setup(opts)
     end,
   },
   {
@@ -88,22 +86,20 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
+    -- Try completion before starting clients. LSP also works if its config fails.
     dependencies = { "hrsh7th/nvim-cmp" },
-    config = function()
-      require("config.lsp").setup()
-    end,
+    main = "config.lsp",
+    opts = {},
   },
   {
     "hrsh7th/nvim-cmp",
     dependencies = { "hrsh7th/cmp-nvim-lsp" },
-    config = function()
-      require("config.completion").setup()
-    end,
+    main = "config.completion",
+    opts = {},
   },
   {
     "mfussenegger/nvim-dap",
-    config = function()
-      require("config.dap").setup()
-    end,
+    main = "config.dap",
+    opts = {},
   },
 }

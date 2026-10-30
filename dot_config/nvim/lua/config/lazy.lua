@@ -23,12 +23,17 @@ function M.setup()
         error(("Failed to clone lazy.nvim into %s (exit %d):\n%s")
           :format(lazypath, vim.v.shell_error, output))
       end
+      if not vim.uv.fs_stat(lazypath .. "/lua/lazy/init.lua") then
+        error("Clone completed without a usable lazy.nvim installation at " .. lazypath
+          .. ". Repair or remove this directory, then restart Neovim.")
+      end
     end
 
     vim.opt.rtp:prepend(lazypath)
     require("lazy").setup(require("config.plugins"), {
       root = lazy_root,
       lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json",
+      install = { colorscheme = { "habamax" } },
       checker = { enabled = false },
     })
   end, debug.traceback)

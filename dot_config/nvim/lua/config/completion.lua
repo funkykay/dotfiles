@@ -2,8 +2,8 @@ local M = {}
 
 function M.setup()
   local cmp = require("cmp")
-  -- Verify the configured source before enabling completion.
-  require("cmp_nvim_lsp")
+  -- Resolve the source and its capabilities before changing completion or LSP.
+  local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
   cmp.setup({
     snippet = {
@@ -37,6 +37,10 @@ function M.setup()
       { name = "nvim_lsp" },
     },
   })
+
+  -- Advertise cmp features only after completion was configured successfully.
+  -- Without it, LSP keeps Neovim's native client capabilities.
+  vim.lsp.config("*", { capabilities = capabilities })
 end
 
 return M

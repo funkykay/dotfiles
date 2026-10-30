@@ -35,10 +35,9 @@ _dotfiles_path_prepend() {
 
 _dotfiles_path_append() {
   [ -n "$1" ] || return 0
-  case ":${PATH:-}:" in
-    *:"$1":*) ;;
-    *) PATH="${PATH:+$PATH:}$1" ;;
-  esac
+  # Reuse exact-entry deduplication, then move the leading entry to the end.
+  _dotfiles_path_prepend "$1"
+  [ "$PATH" = "$1" ] || PATH="${PATH#"$1":}:$1"
 }
 
 if [ -n "${HOME:-}" ]; then
@@ -48,14 +47,6 @@ if [ -n "${HOME:-}" ]; then
   export ASDF_DATA_DIR
   [ -d "$ASDF_DATA_DIR/shims" ] && \
     _dotfiles_path_prepend "$ASDF_DATA_DIR/shims"
-
-  # Avoid starting Go (or its version-manager shim) just to derive a path.
-  _dotfiles_go_bin=${GOBIN:-${GOPATH:-$HOME/go}}
-  if [ -z "${GOBIN:-}" ]; then
-    _dotfiles_go_bin=${_dotfiles_go_bin%%:*}/bin
-  fi
-  _dotfiles_path_append "$_dotfiles_go_bin"
-  unset _dotfiles_go_bin
 
   [ -d "$HOME/.local/bin" ] && _dotfiles_path_prepend "$HOME/.local/bin"
 fi
@@ -72,18 +63,36 @@ export GOENV_PATH_ORDER="${GOENV_PATH_ORDER:-front}"
 export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
 [ -d "$GOENV_ROOT/bin" ] && _dotfiles_path_prepend "$GOENV_ROOT/bin"
 [ -d "$PYENV_ROOT/bin" ] && _dotfiles_path_prepend "$PYENV_ROOT/bin"
-if command -v pyenv >/dev/null 2>&1 && [ -d "$PYENV_ROOT/shims" ]; then
-  _dotfiles_path_prepend "$PYENV_ROOT/shims"
+
+# goenv has no PATH-only init. Expose existing shims in login shells; leave
+# version paths, GOROOT and GOPATH to its native interactive initialization.
+if command -v goenv >/dev/null 2>&1; then
+  if [ -d "$GOENV_ROOT/shims" ]; then
+    if [ "$GOENV_PATH_ORDER" = front ]; then
+      _dotfiles_path_prepend "$GOENV_ROOT/shims"
+    else
+      _dotfiles_path_append "$GOENV_ROOT/shims"
+    fi
+  fi
+else
+  # Standalone Go installations need their tool directory, but no Go process.
+  _dotfiles_go_bin=${GOBIN:-${GOPATH:-$HOME/go}}
+  [ -n "${GOBIN:-}" ] || _dotfiles_go_bin=${_dotfiles_go_bin%%:*}/bin
+  _dotfiles_path_append "$_dotfiles_go_bin"
+  unset _dotfiles_go_bin
 fi
 
-# Put shims ahead of inherited Go version paths, including after macOS path_helper.
-if command -v goenv >/dev/null 2>&1 && [ -d "$GOENV_ROOT/shims" ]; then
-  if [ "$GOENV_PATH_ORDER" = front ]; then
-    _dotfiles_path_prepend "$GOENV_ROOT/shims"
+# Native shim ordering is idempotent, including after macOS path_helper.
+# Explicit sh output keeps this file usable by POSIX login shells. Rehashing
+# and shell functions/completion belong to interactive.sh.
+if command -v pyenv >/dev/null 2>&1; then
+  if _dotfiles_init=$(pyenv init --path --no-rehash sh) && eval "$_dotfiles_init"; then
+    :
   else
-    _dotfiles_path_append "$GOENV_ROOT/shims"
+    printf '%s\n' 'dotfiles: pyenv PATH initialization failed (pyenv init --path).' >&2
   fi
 fi
+unset _dotfiles_init
 
 export PATH
 unset -f _dotfiles_path_prepend _dotfiles_path_append

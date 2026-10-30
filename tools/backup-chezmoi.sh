@@ -12,24 +12,32 @@ fi
 
 # Private, unique directories avoid overwriting backups or exposing local data.
 umask 077
-backup_root=$(CDPATH= cd -- "$1" && pwd -P)
-destination=$(chezmoi execute-template '{{ .chezmoi.destDir }}')
+# A sentinel preserves trailing newlines that command substitution would strip.
+backup_root=$(CDPATH= cd -P -- "$1" && printf '%s.' "$PWD")
+backup_root=${backup_root%.}
+destination=$(chezmoi execute-template '{{ .chezmoi.destDir }}.')
+destination=${destination%.}
 [[ -d $destination ]] || {
   printf 'backup-chezmoi: destination directory not found: %s\n' "$destination" >&2
   exit 1
 }
 backup_dir=$(mktemp -d "$backup_root/chezmoi-backup.XXXXXX")
+: > "$backup_dir/files.tar.gz.partial"
 
 # Archive the live destination, not the rendered source from `chezmoi archive`.
 # NUL-separated paths handle whitespace, newlines and leading dashes.
 # Missing targets have nothing to save. Do not recurse into unexpected
-# directories or follow symlinks to unmanaged contents.
+# directories or follow symlinks to unmanaged contents. Reject unexpected file
+# types instead of silently producing a backup that omits their contents.
 if (
   cd -- "$destination" || exit
   chezmoi managed --include=files,symlinks --path-style=relative --nul-path-separator |
     while IFS= read -r -d '' path; do
-      if [[ -e $path || -L $path ]]; then
+      if [[ -L $path || -f $path ]]; then
         printf './%s\0' "$path"
+      elif [[ -e $path ]]; then
+        printf 'backup-chezmoi: expected a regular file or symlink: %s\n' "$path" >&2
+        exit 1
       fi
     done |
     tar -czf "$backup_dir/files.tar.gz.partial" --no-recursion --null -T -

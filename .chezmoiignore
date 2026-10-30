@@ -2,6 +2,8 @@
 .gitignore
 README.md
 AGENTS.md
+.agents/
+.codex/
 summarize.json
 
 # Repository-local utilities are not deployed by chezmoi.

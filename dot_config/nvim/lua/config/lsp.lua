@@ -1,9 +1,5 @@
 local M = {}
 
-function M.capabilities()
-  return require("cmp_nvim_lsp").default_capabilities()
-end
-
 function M.attach(bufnr)
   local nmap = function(keys, func, desc)
     vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
@@ -44,10 +40,6 @@ function M.setup()
     },
   })
 
-  vim.lsp.config("*", {
-    capabilities = M.capabilities(),
-  })
-
   local group = vim.api.nvim_create_augroup("NvimLsp", { clear = true })
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
@@ -56,7 +48,23 @@ function M.setup()
     end,
   })
 
-  vim.lsp.enable({ "lua_ls", "gopls" })
+  -- Resolve each server independently: a broken config or missing executable
+  -- must not prevent the other language from working.
+  for _, server in ipairs({ "lua_ls", "gopls" }) do
+    local ok, err = pcall(function()
+      local config = vim.lsp.config[server]
+      if not config or type(config.cmd) ~= "table" or not config.cmd[1] then
+        error("No server command configured; check the nvim-lspconfig installation.")
+      end
+      if vim.fn.executable(config.cmd[1]) ~= 1 then
+        error("Server executable is not available in PATH: " .. config.cmd[1])
+      end
+      vim.lsp.enable(server)
+    end)
+    if not ok then
+      vim.notify("LSP " .. server .. " could not be enabled:\n" .. tostring(err), vim.log.levels.WARN)
+    end
+  end
 end
 
 return M

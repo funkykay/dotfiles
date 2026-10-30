@@ -2,15 +2,22 @@ local M = {}
 
 function M.setup()
   local dap = require("dap")
-  dap.adapters.go = {
-    type = "server",
-    host = "127.0.0.1",
-    port = "${port}",
-    executable = {
-      command = "dlv",
-      args = { "dap", "-l", "127.0.0.1:${port}" },
-    },
-  }
+  -- Resolve at launch time so installing Delve does not require a restart.
+  dap.adapters.go = function(callback)
+    if vim.fn.executable("dlv") ~= 1 then
+      vim.notify("Go debugging requires dlv (Delve) in PATH.", vim.log.levels.ERROR)
+      return
+    end
+    callback({
+      type = "server",
+      host = "127.0.0.1",
+      port = "${port}",
+      executable = {
+        command = "dlv",
+        args = { "dap", "-l", "127.0.0.1:${port}" },
+      },
+    })
+  end
 
   dap.configurations.go = {
     {

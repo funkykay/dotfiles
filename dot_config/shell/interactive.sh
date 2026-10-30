@@ -16,19 +16,44 @@ export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 # Prefer the per-user NVM install; Homebrew supports Apple Silicon and Intel.
 for _shell_nvm in "$NVM_DIR" /opt/homebrew/opt/nvm /usr/local/opt/nvm; do
   if [ -s "$_shell_nvm/nvm.sh" ]; then
-    . "$_shell_nvm/nvm.sh"
-    # The upstream completion script also supports Zsh via bashcompinit.
-    if [ -s "$_shell_nvm/bash_completion" ]; then
-      . "$_shell_nvm/bash_completion"
-    elif [ -s "$_shell_nvm/etc/bash_completion.d/nvm" ]; then
-      . "$_shell_nvm/etc/bash_completion.d/nvm"
+    if . "$_shell_nvm/nvm.sh"; then
+      # The upstream completion script also supports Zsh via bashcompinit.
+      for _shell_completion in "$_shell_nvm/bash_completion" "$_shell_nvm/etc/bash_completion.d/nvm"; do
+        if [ -s "$_shell_completion" ]; then
+          . "$_shell_completion" || printf 'dotfiles: NVM completion failed: %s\n' "$_shell_completion" >&2
+          break
+        fi
+      done
+    else
+      printf 'dotfiles: NVM initialization failed: %s/nvm.sh\n' "$_shell_nvm" >&2
     fi
+    # A broken installation must not be mixed with another installation.
     break
   fi
 done
 unset _shell_nvm
+
+# Let each manager handle version selection, PATH cleanup and shell integration.
+# Check generation before eval so failed commands cannot execute partial output.
+if command -v goenv >/dev/null 2>&1; then
+  if _shell_init=$(goenv init - "$_shell_name") && eval "$_shell_init"; then
+    :
+  else
+    printf '%s\n' 'dotfiles: goenv initialization failed (goenv init -).' >&2
+  fi
+fi
+if command -v pyenv >/dev/null 2>&1; then
+  if _shell_init=$(pyenv init - "$_shell_name") && eval "$_shell_init"; then
+    :
+  else
+    printf '%s\n' 'dotfiles: pyenv initialization failed (pyenv init -).' >&2
+  fi
+fi
+unset _shell_init
+
+# SDKMAN selects its current candidates through the upstream startup script.
 if [ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]; then
-  . "$SDKMAN_DIR/bin/sdkman-init.sh"
+  . "$SDKMAN_DIR/bin/sdkman-init.sh" || printf 'dotfiles: SDKMAN initialization failed: %s/bin/sdkman-init.sh\n' "$SDKMAN_DIR" >&2
 fi
 
 if command -v dircolors >/dev/null 2>&1; then
@@ -45,14 +70,6 @@ for _shell_module in aliases functions; do
   fi
 done
 unset _shell_module
-
-# Tool-generated shell adapters share one initialization path.
-if command -v goenv >/dev/null 2>&1; then
-  eval "$(goenv init - "$_shell_name")"
-fi
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init - --no-push-path "$_shell_name")"
-fi
 
 if command -v kubectl >/dev/null 2>&1; then
   if _shell_completion=$(kubectl completion "$_shell_name"); then
