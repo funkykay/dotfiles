@@ -1,5 +1,0 @@
-# Bash prefers this file over .profile for login shells.
-# Delegate to the shared session setup, which also loads .bashrc when interactive.
-if [ -r "$HOME/.profile" ]; then
-  . "$HOME/.profile"
-fi

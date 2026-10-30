@@ -1,4 +1,0 @@
-# Plain non-interactive Zsh only: login/interactive shells load Cargo via env.sh.
-if [[ ! -o interactive && ! -o login && -r "${CARGO_HOME:-$HOME/.cargo}/env" ]]; then
-  source "${CARGO_HOME:-$HOME/.cargo}/env"
-fi

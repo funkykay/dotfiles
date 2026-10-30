@@ -1,9 +1,0 @@
-# General environment for login sessions.
-if [ -r "$HOME/.config/shell/env.sh" ]; then
-  . "$HOME/.config/shell/env.sh"
-fi
-
-# Bash login shells also load the interactive Bash configuration.
-if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
-  . "$HOME/.bashrc"
-fi

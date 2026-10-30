@@ -1,0 +1,22 @@
+[user]
+    name = {{ .git_name | quote }}
+    email = {{ .git_email | quote }}
+
+[init]
+    defaultBranch = main
+
+[fetch]
+    prune = true
+
+[pull]
+    ff = only
+
+[merge]
+    conflictStyle = zdiff3
+
+[alias]
+    st = status -sb
+    lg = log --oneline --graph --decorate -15
+
+[include]
+    path = ~/.gitconfig.local

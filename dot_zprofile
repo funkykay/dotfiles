@@ -1,2 +1,0 @@
-# Shared login environment and tool paths.
-[[ -r "$HOME/.config/shell/env.sh" ]] && source "$HOME/.config/shell/env.sh"

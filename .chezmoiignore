@@ -1,18 +1,1 @@
-# Repository metadata and documentation
-.gitignore
 README.md
-AGENTS.md
-.agents/
-.codex/
-
-# Repository-local utilities are not deployed by chezmoi.
-tools/
-
-# Agent instructions belong to the source repository, not to Neovim.
-.config/nvim/AGENTS.md
-
-# Machine-local configuration and credentials must never be deployed.
-.config/zsh/local.zsh
-.config/shell/local.sh
-.config/bash/local.sh
-.gitconfig.local
