@@ -1,0 +1,85 @@
+#!/bin/sh
+set -eu
+
+has() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+heading() {
+    printf '\n%s\n' "$1"
+}
+
+entry() {
+    printf '  %-22s %s\n' "$1" "$2"
+}
+
+printf '%s\n' 'dots · Entwickler-Spickzettel'
+
+heading 'Shell'
+entry '.. / ...' 'Ein / zwei Verzeichnisse hoch'
+entry 'll' 'Dateien inklusive versteckter anzeigen'
+
+if has git; then
+    heading 'Git'
+    entry 'gs' 'Kurzer Status'
+    entry 'ga <datei>' 'Datei stagen'
+    entry 'gc -m "..."' 'Commit erstellen'
+    entry 'gp' 'Push'
+    entry 'git lg' 'Kompakter Commit-Verlauf'
+fi
+
+if has rg || has fd || has fdfind || has fzf; then
+    heading 'Suchen'
+
+    if has rg; then
+        entry 'rg TODO' 'In Dateiinhalten suchen'
+    fi
+
+    if has fd; then
+        entry 'fd -e ts' 'TypeScript-Dateien finden'
+    elif has fdfind; then
+        entry 'fdfind -e ts' 'TypeScript-Dateien finden'
+    fi
+
+    if has fzf; then
+        entry 'fzf' 'Interaktive Auswahl'
+    fi
+fi
+
+if has bat || has batcat || has jq || has gh || has mise || has direnv || has starship; then
+    heading 'Werkzeuge'
+
+    if has bat; then
+        entry 'bat <datei>' 'Datei mit Syntaxfarben anzeigen'
+    elif has batcat; then
+        entry 'batcat <datei>' 'Datei mit Syntaxfarben anzeigen'
+    fi
+
+    if has jq; then
+        entry 'jq . <datei.json>' 'JSON formatieren'
+    fi
+
+    if has gh; then
+        entry 'gh pr list' 'Pull Requests anzeigen'
+    fi
+
+    if has mise; then
+        entry 'mise current' 'Aktive Tool-Versionen anzeigen'
+    fi
+
+    if has direnv; then
+        entry 'direnv allow' 'Projektumgebung freigeben'
+    fi
+
+    if has starship; then
+        entry 'starship' 'Shell-Prompt (automatisch)'
+    fi
+fi
+
+if has chezmoi; then
+    heading 'Dotfiles'
+    entry 'chezmoi diff' 'Änderungen prüfen'
+    entry 'chezmoi apply' 'Konfiguration anwenden'
+    entry 'chezmoi update' 'Repo aktualisieren und anwenden'
+    entry 'chezmoi edit <datei>' 'Verwaltete Datei bearbeiten'
+fi
