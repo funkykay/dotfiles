@@ -18,6 +18,9 @@ if (( ! $+functions[compdef] )); then
     compinit
 fi
 
+# Include . and .. in path completion so Tab can append their trailing slash.
+zstyle ':completion:*' special-dirs true
+
 if command -v fzf >/dev/null 2>&1 && fzf --zsh >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi
