@@ -28,7 +28,10 @@ if command -v fzf >/dev/null 2>&1; then
         export FZF_DEFAULT_OPTS='--height=40% --layout=reverse --border'
     fi
 
-    # Bash keybindings (Ctrl+R, Ctrl+T, Alt+C)
+    # Bash keybindings:
+    # Ctrl+R: Befehlsverlauf durchsuchen
+    # Ctrl+T: Dateipfad in die Kommandozeile einfügen
+    # Alt+C: Verzeichnis suchen und dorthin wechseln
     if [[ -f /usr/share/doc/fzf/examples/key-bindings.bash ]]; then
         source /usr/share/doc/fzf/examples/key-bindings.bash
     fi
