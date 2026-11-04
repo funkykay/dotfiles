@@ -22,9 +22,16 @@ if [ -z "${VISUAL:-}" ]; then
     export VISUAL
 fi
 
-if [ -z "${FZF_DEFAULT_OPTS:-}" ]; then
-    FZF_DEFAULT_OPTS='--height=40% --layout=reverse --border'
-    export FZF_DEFAULT_OPTS
+# fzf configuration
+if command -v fzf >/dev/null 2>&1; then
+    if [ -z "${FZF_DEFAULT_OPTS:-}" ]; then
+        export FZF_DEFAULT_OPTS='--height=40% --layout=reverse --border'
+    fi
+
+    # Bash keybindings (Ctrl+R, Ctrl+T, Alt+C)
+    if [[ -f /usr/share/doc/fzf/examples/key-bindings.bash ]]; then
+        source /usr/share/doc/fzf/examples/key-bindings.bash
+    fi
 fi
 
 alias ..='cd ..'
