@@ -70,6 +70,38 @@ Für eine gesonderte berufliche Identität kannst du darin beispielsweise Folgen
 
 Die Datei `~/.gitconfig.work` enthält dann eigene `[user]`-Werte.
 
+### fzf-Tastenkürzel unter macOS
+
+Unter macOS erzeugt die Option-Taste (`⌥`) standardmäßig Sonderzeichen. Beispielsweise wird aus `Option+C` das Zeichen `ç`.
+
+Damit das fzf-Tastenkürzel `Alt+C` (interaktiver Verzeichniswechsel) funktioniert, muss das Terminal die Option-Taste als Meta-/Alt-Taste interpretieren.
+
+**Terminal.app**
+
+Einstellungen → Profile → Tastatur → **„Wahltaste als Meta-Taste verwenden“** aktivieren.
+
+**iTerm2**
+
+Settings → Profiles → Keys → **Left Option Key** auf `Esc+` setzen.
+
+**Ghostty**
+
+Die Datei `~/.config/ghostty/config` (ohne Dateiendung) anlegen oder bearbeiten:
+
+```ini
+macos-option-as-alt = left
+```
+
+Anschließend die Konfiguration neu laden oder Ghostty neu starten.
+
+Mit `left` wird nur die linke Option-Taste als Alt verwendet. Die rechte Option-Taste bleibt für macOS-Sonderzeichen verfügbar.
+
+**Alternative ohne Konfigurationsänderung**
+
+`Esc` drücken, loslassen und anschließend `c` drücken. Das entspricht bei vielen Terminals `Alt+C`.
+
+**Hinweis:** Diese Terminal-Einstellungen sind gerätespezifisch und werden nicht automatisch durch das Chezmoi-Setup verwaltet.
+
 ## Alltag
 
 ```sh
