@@ -44,6 +44,7 @@ erhalten; bereits gespeicherte Git-Identitätswerte werden wiederverwendet.
 
 - Gemeinsame Shell-Aliase (`..`, `...`, `ll`, `gs`, `ga`, `gc`, `gp`), `~/.local/bin` im `PATH` und ein Editor-Fallback.
 - Bash-/Zsh-History, fzf-Tastenkürzel (`Ctrl+R`, `Ctrl+T`, `Alt+C`) sowie Starship-Prompt.
+- `k` als Alias für `kubectl`; unter Zsh Tab-Vervollständigung für beide Befehle, sofern `kubectl` installiert ist.
 - Optional aktivierte Shell-Hooks für **mise** und **direnv**, sofern installiert. Ein Projekt mit `.envrc` muss für direnv weiterhin explizit per `direnv allow` freigegeben werden.
 - Git-Defaults, Aliase und ein globales Ignore für OS-Dateien und Editor-Backups.
 - `extract`, `json` und `public-ip` unter `~/.local/bin`.

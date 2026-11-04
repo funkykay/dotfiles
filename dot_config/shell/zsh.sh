@@ -36,3 +36,8 @@ fi
 if command -v direnv >/dev/null 2>&1; then
     eval "$(direnv hook zsh)"
 fi
+
+if command -v kubectl >/dev/null 2>&1; then
+    source <(kubectl completion zsh)
+    compdef _kubectl k
+fi

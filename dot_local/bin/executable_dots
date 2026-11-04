@@ -28,6 +28,12 @@ if has git; then
     entry 'git lg' 'Kompakter Commit-Verlauf'
 fi
 
+if has kubectl; then
+    heading 'Kubernetes'
+    entry 'k' 'Kurzform für kubectl'
+    entry 'k <Tab>' 'Befehle vervollständigen (Zsh)'
+fi
+
 if has rg || has fd || has fdfind || has fzf; then
     heading 'Suchen'
 
