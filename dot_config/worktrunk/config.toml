@@ -1,0 +1,7 @@
+skip-commit-generation-prompt = true
+
+[pre-start]
+remember-base = "wt config state vars set base={{ base }}"
+
+[aliases]
+backmerge = "wt merge {{ vars.base }}"
