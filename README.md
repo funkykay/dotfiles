@@ -96,6 +96,22 @@ Anschließend die Konfiguration neu laden oder Ghostty neu starten.
 
 Mit `left` wird nur die linke Option-Taste als Alt verwendet. Die rechte Option-Taste bleibt für macOS-Sonderzeichen verfügbar.
 
+**VSCodium / VS Code**
+
+In den User Settings (`settings.json`) folgende Einstellung aktivieren:
+
+```json
+{
+  "terminal.integrated.macOptionIsMeta": true
+}
+```
+
+Alternativ in den grafischen Einstellungen nach `macOptionIsMeta` suchen und **Terminal › Integrated: Mac Option Is Meta** aktivieren.
+
+Anschließend im integrierten Terminal mit `Option+C` die fzf-Verzeichnissuche starten.
+
+Die Einstellung gilt nur für das integrierte Terminal, nicht für den Editor selbst.
+
 **Alternative ohne Konfigurationsänderung**
 
 `Esc` drücken, loslassen und anschließend `c` drücken. Das entspricht bei vielen Terminals `Alt+C`.
